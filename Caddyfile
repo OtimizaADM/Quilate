@@ -1,0 +1,17 @@
+# Proxy reverso com HTTPS automático (Let's Encrypt).
+# Os subdomínios precisam ter registro DNS (A) apontando para o IP da VPS.
+{
+	email {$ACME_EMAIL}
+}
+
+app.{$DOMINIO} {
+	reverse_proxy quilate:3000
+}
+
+n8n.{$DOMINIO} {
+	reverse_proxy n8n:5678
+}
+
+evo.{$DOMINIO} {
+	reverse_proxy evolution-api:8080
+}
