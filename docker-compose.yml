@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16
+    container_name: quilate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quilate
+      POSTGRES_PASSWORD: quilate
+      POSTGRES_DB: quilate
+    # 5433 no host para não colidir com um PostgreSQL local (Homebrew) na 5432
+    ports:
+      - "5433:5432"
+    volumes:
+      - quilate-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quilate -d quilate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  quilate-pgdata:

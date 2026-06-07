@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quilate
 
-## Getting Started
+Sistema de controle de estoque para joalherias — **by Otimiza**. Cliente piloto: Brasilerie.
+Single-tenant, usuário único. Stack: Next.js 16 (App Router) + PostgreSQL + Drizzle ORM.
 
-First, run the development server:
+> Especificação completa em `ESPECIFICACAO_Quilate.md`. Diretrizes de código em `CODE.md`.
+
+## Quickstart (desenvolvimento)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env        # ajuste se necessário
+npm install
+npm run db:up               # sobe o PostgreSQL em Docker (porta 5433 no host)
+npm run db:migrate          # cria tabelas + a view `saldos`
+npm run db:seed             # popula tipos, pedras e tamanhos válidos
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> O container publica na porta **5433** do host para não colidir com um
+> PostgreSQL local (ex.: Homebrew) já em uso na 5432.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm test` | Testes (Vitest) |
+| `npm run db:up` / `db:down` | Sobe / derruba o Postgres (Docker) |
+| `npm run db:generate` | Gera migration a partir do schema |
+| `npm run db:migrate` | Aplica migrations |
+| `npm run db:seed` | Popula tabelas de referência (idempotente) |
+| `npm run db:studio` | Drizzle Studio (inspeção do banco) |
 
-## Learn More
+## Estrutura
 
-To learn more about Next.js, take a look at the following resources:
+- `src/db/` — schema (`schema.ts`), conexão (`client.ts`), seed (`seed.ts`).
+- `src/lib/codigo/` — montagem/parsing/decodificação do código de produto + dados de referência (fonte da verdade).
+- `src/lib/modelos/` — regras de cadastro: geração de variações, validação, serviço transacional.
+- `src/lib/imagens/` — persistência de imagem no disco.
+- `src/app/` — telas (App Router) e API (`/api/modelos`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Implementado nesta fase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Schema completo (seção 4) com a view `saldos` derivada de `movimentacoes`, `CHECK`s e `UNIQUE`s compostos.
+- Biblioteca do código de produto (tipo+seq+pedra+tamanho), com testes.
+- Cadastro de modelo: gera o sequencial por tipo e cria as variações (SKUs) automaticamente, com upload de imagem.
 
-## Deploy on Vercel
+## Fora de escopo (ver seção 9 da spec — pendente de decisão)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Migração da planilha legada, regra DE/PARA dos anéis, integração WhatsApp/N8N e multi-tenant.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Próximas telas
+
+Movimentação (entrada/saída com bloqueio de saldo negativo), Catálogo e Relatórios; autenticação (Auth.js) e documentação de deploy na VPS.

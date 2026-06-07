@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1780784872934,
+      "tag": "0000_redundant_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780787396572,
+      "tag": "0001_freezing_molten_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780787928736,
+      "tag": "0002_young_stephen_strange",
+      "breakpoints": true
+    }
+  ]
+}

@@ -24,14 +24,19 @@
 .DS_Store
 *.pem
 
+# imagens enviadas (vão para o disco do servidor, fora do versionamento)
+/uploads
+
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (segredos NÃO versionados; os .example são templates seguros)
 .env*
+!.env.example
+!**/.env.example
 
 # vercel
 .vercel

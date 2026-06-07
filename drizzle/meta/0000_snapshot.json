@@ -1,0 +1,417 @@
+{
+  "id": "ed01ac96-1dd0-4829-8a0a-3640c8084725",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.modelos": {
+      "name": "modelos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequencial": {
+          "name": "sequencial",
+          "type": "char(5)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preco_custo": {
+          "name": "preco_custo",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preco_venda": {
+          "name": "preco_venda",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imagem_path": {
+          "name": "imagem_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "modelos_tipo_tipos_codigo_fk": {
+          "name": "modelos_tipo_tipos_codigo_fk",
+          "tableFrom": "modelos",
+          "tableTo": "tipos",
+          "columnsFrom": [
+            "tipo"
+          ],
+          "columnsTo": [
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "modelos_tipo_sequencial": {
+          "name": "modelos_tipo_sequencial",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tipo",
+            "sequencial"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.movimentacoes": {
+      "name": "movimentacoes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "variacao_id": {
+          "name": "variacao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_mov": {
+          "name": "tipo_mov",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantidade": {
+          "name": "quantidade",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origem": {
+          "name": "origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data": {
+          "name": "data",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movimentacoes_variacao_id_variacoes_id_fk": {
+          "name": "movimentacoes_variacao_id_variacoes_id_fk",
+          "tableFrom": "movimentacoes",
+          "tableTo": "variacoes",
+          "columnsFrom": [
+            "variacao_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "movimentacoes_tipo_mov": {
+          "name": "movimentacoes_tipo_mov",
+          "value": "\"movimentacoes\".\"tipo_mov\" in ('entrada','saida')"
+        },
+        "movimentacoes_quantidade": {
+          "name": "movimentacoes_quantidade",
+          "value": "\"movimentacoes\".\"quantidade\" > 0"
+        },
+        "movimentacoes_origem": {
+          "name": "movimentacoes_origem",
+          "value": "\"movimentacoes\".\"origem\" in ('whatsapp','manual','importacao')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pedras": {
+      "name": "pedras",
+      "schema": "",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "char(2)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tamanhos_validos": {
+      "name": "tamanhos_validos",
+      "schema": "",
+      "columns": {
+        "tipo": {
+          "name": "tipo",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tamanho": {
+          "name": "tamanho",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tamanhos_validos_tipo_tipos_codigo_fk": {
+          "name": "tamanhos_validos_tipo_tipos_codigo_fk",
+          "tableFrom": "tamanhos_validos",
+          "tableTo": "tipos",
+          "columnsFrom": [
+            "tipo"
+          ],
+          "columnsTo": [
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tamanhos_validos_pk": {
+          "name": "tamanhos_validos_pk",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tipo",
+            "tamanho"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tipos": {
+      "name": "tipos",
+      "schema": "",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "smallint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.variacoes": {
+      "name": "variacoes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "modelo_id": {
+          "name": "modelo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pedra": {
+          "name": "pedra",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tamanho": {
+          "name": "tamanho",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "variacoes_modelo_id_modelos_id_fk": {
+          "name": "variacoes_modelo_id_modelos_id_fk",
+          "tableFrom": "variacoes",
+          "tableTo": "modelos",
+          "columnsFrom": [
+            "modelo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "variacoes_pedra_pedras_codigo_fk": {
+          "name": "variacoes_pedra_pedras_codigo_fk",
+          "tableFrom": "variacoes",
+          "tableTo": "pedras",
+          "columnsFrom": [
+            "pedra"
+          ],
+          "columnsTo": [
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "variacoes_codigo_unique": {
+          "name": "variacoes_codigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codigo"
+          ]
+        },
+        "variacoes_modelo_pedra_tamanho": {
+          "name": "variacoes_modelo_pedra_tamanho",
+          "nullsNotDistinct": false,
+          "columns": [
+            "modelo_id",
+            "pedra",
+            "tamanho"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.saldos": {
+      "columns": {
+        "variacao_id": {
+          "name": "variacao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "saldo": {
+          "name": "saldo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "\n    select\n      v.id as variacao_id,\n      v.codigo,\n      coalesce(sum(case when m.tipo_mov = 'entrada' then m.quantidade\n                        when m.tipo_mov = 'saida'   then -m.quantidade end), 0) as saldo\n    from variacoes v\n    left join movimentacoes m on m.variacao_id = v.id\n    group by v.id, v.codigo\n  ",
+      "name": "saldos",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
