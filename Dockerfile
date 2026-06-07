@@ -4,9 +4,11 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Dependências (todas — build precisa das devDependencies)
+# Dependências (todas — build precisa das devDependencies).
+# npm install (em vez de npm ci) para tolerar diferenças de versão de npm/lockfile
+# entre a máquina de dev e a VPS (ex.: entradas de plataforma do esbuild).
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund
 
 # Código + build
 COPY . .
