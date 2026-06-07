@@ -1,32 +1,23 @@
-# Stack de PRODUÇÃO do Quilate (VPS). Tudo atrás do Caddy (HTTPS automático).
-# Subdomínios: app.<DOMINIO> (Quilate), n8n.<DOMINIO>, evo.<DOMINIO>.
+# Stack de PRODUÇÃO do Quilate (VPS) — integra com um nginx/proxy já existente.
+# Os serviços escutam SÓ em 127.0.0.1 (localhost); o nginx do host faz HTTPS e proxy:
+#   quilate.<DOMINIO> -> 127.0.0.1:3002   (app Quilate)
+#   n8n.<DOMINIO>     -> 127.0.0.1:5678   (N8N)
+#   evo.<DOMINIO>     -> 127.0.0.1:8080   (Evolution API)
 # Variáveis vêm do arquivo .env (veja .env.prod.example).
+# (Para uma VPS limpa sem proxy, existe a variante com Caddy — ver histórico/Caddyfile.)
 name: quilate-prod
 
 services:
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      DOMINIO: ${DOMINIO}
-      ACME_EMAIL: ${ACME_EMAIL}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on: [quilate, n8n, evolution-api]
-
   quilate:
     build: .
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://quilate:${QUILATE_DB_PASSWORD}@quilate-postgres:5432/quilate
       AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: https://app.${DOMINIO}
+      AUTH_URL: https://quilate.${DOMINIO}
       AUTH_TRUST_HOST: "true"
       AUTH_USERNAME: ${AUTH_USERNAME}
       AUTH_PASSWORD_HASH: ${AUTH_PASSWORD_HASH}
@@ -56,6 +47,8 @@ services:
   evolution-api:
     image: evoapicloud/evolution-api:latest
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
     depends_on:
       evolution-postgres:
         condition: service_healthy
@@ -89,6 +82,8 @@ services:
   n8n:
     image: n8nio/n8n:latest
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
     environment:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       N8N_HOST: n8n.${DOMINIO}
@@ -96,13 +91,12 @@ services:
       N8N_PORT: "5678"
       WEBHOOK_URL: https://n8n.${DOMINIO}/
       N8N_SECURE_COOKIE: "true"
+      N8N_PROXY_HOPS: "1"
       GENERIC_TIMEZONE: ${TIMEZONE:-America/Sao_Paulo}
     volumes:
       - n8n_data:/home/node/.n8n
 
 volumes:
-  caddy_data:
-  caddy_config:
   quilate_uploads:
   quilate_pgdata:
   evolution_pgdata:
