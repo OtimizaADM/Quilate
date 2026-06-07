@@ -1,0 +1,465 @@
+{
+  "id": "QuilateAgenteWpp01",
+  "name": "Quilate — Agente WhatsApp",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quilate-wpp",
+        "options": {}
+      },
+      "id": "11111111-1111-4111-8111-111111111111",
+      "name": "Webhook Evolution",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        304
+      ],
+      "webhookId": "quilate-wpp"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai a mensagem do payload da Evolution (MESSAGES_UPSERT) e aplica allowlist.\n// EDITE a lista abaixo com o(s) número(s) do operador (só dígitos, com DDI+DDD).\nconst PERMITIDOS = ['5511999999999']; // EDITE: numero(s) do operador (DDI+DDD+numero)\n\nconst body = $input.first().json.body ?? $input.first().json;\nconst data = Array.isArray(body.data) ? body.data[0] : body.data;\nif (!data || !data.key) return [];\n\n// Ignora mensagens enviadas por nós mesmos\nif (data.key.fromMe) return [];\n\nconst remoteJid = data.key.remoteJid || '';\nconst numero = remoteJid.split('@')[0];\nconst texto = data.message?.conversation\n  || data.message?.extendedTextMessage?.text\n  || '';\n\n// Só processa texto de números autorizados\nif (!texto || !PERMITIDOS.includes(numero)) return [];\n\nreturn [{ json: { sender: numero, remoteJid, texto, pushName: data.pushName || '' } }];"
+      },
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Extrair e filtrar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.texto }}",
+        "options": {
+          "systemMessage": "Você é o assistente de estoque da joalheria (Quilate), no WhatsApp. Ajuda o operador a consultar produtos e registrar entradas e saídas. Fale como um colega de balcão: cordial, direto, em português do Brasil.\n\nREGRAS (inegociáveis):\n1. Nunca adivinhe. Se faltar o produto, a quantidade ou se é entrada/saída, pergunte.\n2. Identifique o produto com buscar_produto. Se houver 0 ou vários resultados, liste as opções e peça para escolher. Só siga com um código exato.\n3. Antes de gravar qualquer movimentação (registrar_movimentacao), confirme em UMA linha e só grave após o operador responder \"sim\".\n4. Saída nunca passa do saldo. Se a API recusar por saldo insuficiente, avise e pare.\n5. Entrada exige coleção e fornecedor (use listar_colecoes / listar_fornecedores). Se o citado não existir, ofereça criar (criar_colecao: nome + data AAAA-MM-DD; criar_fornecedor: nome), confirmando antes.\n6. Consulta de produto: consultar_produto. Visão geral do estoque: posicao_estoque.\n\nESTILO DAS RESPOSTAS:\n- Curto (1 a 4 linhas), sem jargão. Não diga \"SKU\"; use o código e o nome do produto.\n- Destaque com *negrito* o produto, a ação e o saldo. Preços em R$ e quantidade em \"un.\".\n- Nunca mostre ids internos nem detalhes técnicos.\n- Confirmação (exemplos):\n  • Saída: \"Confirmar *saída* de 2 un. do *Anel solitário* (1000010618)? Saldo: 6 → 4. Responda *sim*.\"\n  • Entrada: \"Confirmar *entrada* de 50 un. do *Anel solitário* (1000010618)? Coleção *BotTeste*, fornecedor *xyz*. Saldo: 3 → 53. Responda *sim*.\"\n- Sucesso: \"✅ *Entrada* registrada: +50 *Anel solitário*. Saldo: *53 un.*\"\n- Recusa: \"❌ Não dá: há só *4 un.* em estoque. Nada foi registrado.\"\n- Cadastro: \"✅ Coleção *Verão 2027* criada.\" / \"✅ Fornecedor *Ourivesaria Silva* criado.\"\n- Quando faltar dado, faça UMA pergunta objetiva (com uma lista curta de opções, se ajudar).\n"
+        }
+      },
+      "id": "33333333-3333-4333-8333-333333333333",
+      "name": "Agente Quilate",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sender }}",
+        "contextWindowLength": 12
+      },
+      "id": "55555555-5555-4555-8555-555555555555",
+      "name": "Memória por número",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca produtos (SKUs) por código ou por descrição. Retorna candidatos com codigo, descricao e saldo. Use para identificar o produto antes de qualquer operação.",
+        "url": "http://host.docker.internal:3000/api/integracao/variacoes?q={termo}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "termo",
+              "description": "texto de busca: um código ou parte da descrição",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "66666666-6666-4666-8666-666666666666",
+      "name": "buscar_produto",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Detalhe de um produto pelo código exato: decodificado, preço de venda, saldo e o arquivo de imagem.",
+        "url": "http://host.docker.internal:3000/api/integracao/produtos/{codigo}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "codigo",
+              "description": "código exato do SKU (8 ou 10 dígitos)",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "77777777-7777-4777-8777-777777777777",
+      "name": "consultar_produto",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Posição de estoque consolidada (itens com saldo e totais de custo/venda).",
+        "url": "http://host.docker.internal:3000/api/integracao/posicao-estoque",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "88888888-8888-4888-8888-888888888888",
+      "name": "posicao_estoque",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Lista as coleções disponíveis (id, nome, data). Necessário para registrar uma ENTRADA.",
+        "url": "http://host.docker.internal:3000/api/integracao/colecoes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "99999999-9999-4999-8999-999999999999",
+      "name": "listar_colecoes",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Lista os fornecedores disponíveis (id, nome). Necessário para registrar uma ENTRADA.",
+        "url": "http://host.docker.internal:3000/api/integracao/fornecedores",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "name": "listar_fornecedores",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Registra uma movimentação. tipoMov = 'entrada' ou 'saida'. Para ENTRADA, colecaoId e fornecedorId são obrigatórios. SÓ chame após confirmação explícita do operador.",
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/integracao/movimentacoes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"codigo\": \"{codigo}\",\n  \"tipoMov\": \"{tipoMov}\",\n  \"quantidade\": {quantidade},\n  \"observacao\": \"{observacao}\",\n  \"colecaoId\": \"{colecaoId}\",\n  \"fornecedorId\": \"{fornecedorId}\"\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "codigo",
+              "description": "código exato do SKU",
+              "type": "string"
+            },
+            {
+              "name": "tipoMov",
+              "description": "'entrada' ou 'saida'",
+              "type": "string"
+            },
+            {
+              "name": "quantidade",
+              "description": "quantidade inteira > 0",
+              "type": "number"
+            },
+            {
+              "name": "observacao",
+              "description": "observação opcional (use string vazia se não houver)",
+              "type": "string"
+            },
+            {
+              "name": "colecaoId",
+              "description": "id da coleção (obrigatório na entrada; string vazia na saída)",
+              "type": "string"
+            },
+            {
+              "name": "fornecedorId",
+              "description": "id do fornecedor (obrigatório na entrada; string vazia na saída)",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "name": "registrar_movimentacao",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/message/sendText/quilate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Extrair e filtrar').item.json.remoteJid }}\",\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
+        "options": {}
+      },
+      "id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "name": "Responder WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cadastra uma NOVA coleção (nome + data no formato AAAA-MM-DD). Use quando o operador pedir para criar/cadastrar uma coleção. Pergunte a data se não for informada.",
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/integracao/colecoes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"nome\": \"{nome}\",\n  \"data\": \"{data}\"\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "nome",
+              "description": "nome da coleção",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "description": "data AAAA-MM-DD",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "92065a33-08f2-4bd3-8bed-088ee82bc500",
+      "name": "criar_colecao",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cadastra um NOVO fornecedor (nome). Use quando o operador pedir para criar/cadastrar um fornecedor.",
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/integracao/fornecedores",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"nome\": \"{nome}\"\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "nome",
+              "description": "nome do fornecedor",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "8ecd1de8-9c3c-4a21-b7bb-5ae3c8e4f27b",
+      "name": "criar_fornecedor",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        384,
+        544
+      ],
+      "id": "676f8c5e-b7d7-46c2-90b0-d399f8b7b712",
+      "name": "Groq Chat Model"
+    }
+  ],
+  "connections": {
+    "Webhook Evolution": {
+      "main": [
+        [
+          {
+            "node": "Extrair e filtrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair e filtrar": {
+      "main": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Quilate": {
+      "main": [
+        [
+          {
+            "node": "Responder WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória por número": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_produto": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_produto": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "posicao_estoque": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "listar_colecoes": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "listar_fornecedores": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_movimentacao": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criar_colecao": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criar_fornecedor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Quilate",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
