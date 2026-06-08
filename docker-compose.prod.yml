@@ -28,6 +28,11 @@ services:
       EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
       EVOLUTION_URL: ${EVOLUTION_URL:-http://evolution-api:8080}
       EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE:-vps}
+      # Visão/OCR de nota fiscal. Se VISION_API_KEY ficar vazia, usa a GROQ_API_KEY
+      # (fallback no código). Para ler números melhor, aponte para OpenRouter gpt-4o-mini.
+      VISION_API_KEY: ${VISION_API_KEY:-}
+      VISION_API_URL: ${VISION_API_URL:-https://api.groq.com/openai/v1/chat/completions}
+      VISION_MODEL: ${VISION_MODEL:-meta-llama/llama-4-scout-17b-16e-instruct}
     volumes:
       - quilate_uploads:/app/uploads
     depends_on:
