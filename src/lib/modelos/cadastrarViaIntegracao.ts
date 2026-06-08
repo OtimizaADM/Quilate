@@ -13,9 +13,9 @@
  */
 
 import type { Database } from "@/db/client";
-import { listarColecoes } from "@/lib/colecoes/colecoes";
+import { criarColecao, listarColecoes } from "@/lib/colecoes/colecoes";
 import { PEDRAS, tipoTemTamanho } from "@/lib/codigo/referencia";
-import { listarFornecedores } from "@/lib/fornecedores/fornecedores";
+import { criarFornecedor, listarFornecedores } from "@/lib/fornecedores/fornecedores";
 import { cadastrarModelo, type ResultadoCadastroModelo } from "./cadastrarModelo";
 import { esquemaCadastroModelo } from "./validarCadastro";
 
@@ -37,11 +37,14 @@ export interface EntradaCadastroIntegracao {
   precoVenda?: unknown;
   colecaoId?: string;
   colecao?: string;
+  colecaoData?: string;
   fornecedorId?: string;
   fornecedor?: string;
   pedras?: unknown;
   tamanhos?: unknown;
 }
+
+const hojeISO = (): string => new Date().toISOString().slice(0, 10);
 
 const normalizar = (s: string) =>
   s
@@ -80,14 +83,19 @@ async function resolverColecaoId(db: Database, e: EntradaCadastroIntegracao): Pr
   const nome = String(e.colecao ?? "").trim();
   if (!nome) throw new ErroCadastroIntegracao("Coleção é obrigatória.", 422);
   const achadas = lista.filter((c) => normalizar(c.nome) === normalizar(nome));
-  if (achadas.length === 0)
-    throw new ErroCadastroIntegracao(`Coleção "${nome}" não encontrada. Crie-a primeiro.`, 404);
+  if (achadas.length === 1) return achadas[0].id;
   if (achadas.length > 1)
     throw new ErroCadastroIntegracao(
       `Há ${achadas.length} coleções "${nome}" (datas diferentes). Especifique a data ou use o id.`,
       409,
     );
-  return achadas[0].id;
+  // Não existe: cria com a data informada ou hoje (o operador já confirmou o cadastro).
+  const data =
+    typeof e.colecaoData === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.colecaoData)
+      ? e.colecaoData
+      : hojeISO();
+  const nova = await criarColecao(db, { nome, data });
+  return nova.id;
 }
 
 async function resolverFornecedorId(db: Database, e: EntradaCadastroIntegracao): Promise<string> {
@@ -100,8 +108,10 @@ async function resolverFornecedorId(db: Database, e: EntradaCadastroIntegracao):
   const nome = String(e.fornecedor ?? "").trim();
   if (!nome) throw new ErroCadastroIntegracao("Fornecedor é obrigatório.", 422);
   const achado = lista.find((f) => normalizar(f.nome) === normalizar(nome));
-  if (!achado) throw new ErroCadastroIntegracao(`Fornecedor "${nome}" não encontrado. Crie-o primeiro.`, 404);
-  return achado.id;
+  if (achado) return achado.id;
+  // Não existe: cria (o operador já confirmou o cadastro com esse fornecedor).
+  const novo = await criarFornecedor(db, { nome });
+  return novo.id;
 }
 
 const paraLista = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
