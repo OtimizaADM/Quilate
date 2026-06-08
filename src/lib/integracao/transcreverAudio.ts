@@ -9,6 +9,8 @@
  * EVOLUTION_API_KEY, EVOLUTION_URL (default rede interna), EVOLUTION_INSTANCE.
  */
 
+import { baixarMediaEvolution, fetchComTimeout } from "./evolutionMedia";
+
 const GROQ_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 
 export interface EntradaTranscricao {
@@ -24,46 +26,14 @@ export function limparBase64(valor: string): string {
   return String(valor || "").replace(/^data:.*;base64,/, "").trim();
 }
 
-async function fetchComTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
-  const controlador = new AbortController();
-  const timer = setTimeout(() => controlador.abort(), ms);
-  try {
-    return await fetch(url, { ...init, signal: controlador.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function baixarAudioEvolution(messageId: string, remoteJid?: string): Promise<string> {
-  const base = process.env.EVOLUTION_URL ?? "http://evolution-api:8080";
-  const instancia = process.env.EVOLUTION_INSTANCE ?? "vps";
-  const apikey = process.env.EVOLUTION_API_KEY;
-  if (!apikey) throw new Error("EVOLUTION_API_KEY não configurada no app.");
-
-  const resp = await fetchComTimeout(
-    `${base}/chat/getBase64FromMediaMessage/${instancia}`,
-    {
-      method: "POST",
-      headers: { apikey, "Content-Type": "application/json" },
-      body: JSON.stringify({ message: { key: { id: messageId, remoteJid } } }),
-    },
-    20000,
-  );
-  if (!resp.ok) {
-    throw new Error(`Evolution ${resp.status}: ${(await resp.text().catch(() => "")).slice(0, 200)}`);
-  }
-  const dados = (await resp.json()) as { base64?: string };
-  if (!dados.base64) throw new Error("Evolution não retornou o base64 do áudio.");
-  return dados.base64;
-}
-
 export async function transcreverAudio(entrada: EntradaTranscricao): Promise<{ text: string }> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY não configurada no app.");
 
   let base64 = entrada.audioBase64 ? limparBase64(entrada.audioBase64) : "";
   if (!base64 && entrada.messageId) {
-    base64 = limparBase64(await baixarAudioEvolution(entrada.messageId, entrada.remoteJid));
+    const midia = await baixarMediaEvolution(entrada.messageId, entrada.remoteJid);
+    base64 = limparBase64(midia.base64);
   }
   if (!base64) throw new Error("Forneça audioBase64 ou messageId.");
 
