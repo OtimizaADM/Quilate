@@ -101,7 +101,7 @@ export function montarCodigo(partes: PartesCodigo): string {
  * Usa o primeiro dígito (tipo) para decidir o comprimento esperado.
  * @example parseCodigo("1001230618") // { tipo: 1, sequencial: "00123", pedra: "06", tamanho: "18" }
  */
-export function parseCodigo(codigo: string): PartesCodigo {
+export function parseCodigo(codigo: string, leniente = false): PartesCodigo {
   if (!/^\d+$/.test(codigo)) {
     throw new Error(`Código inválido: "${codigo}". Esperado apenas dígitos.`);
   }
@@ -121,7 +121,10 @@ export function parseCodigo(codigo: string): PartesCodigo {
 
   const sequencial = codigo.slice(1, 6);
   const pedra = codigo.slice(6, 8);
-  if (!buscarPedra(pedra)) {
+  // `leniente`: usado só na DECODIFICAÇÃO para exibição. Dados legados (importados
+  // da planilha) podem ter pedra/tamanho fora da tabela de referência — exibir não
+  // deve quebrar. A validação rígida segue valendo no cadastro (leniente=false).
+  if (!leniente && !buscarPedra(pedra)) {
     throw new Error(`Pedra inválida no código "${codigo}": "${pedra}".`);
   }
 
@@ -130,7 +133,7 @@ export function parseCodigo(codigo: string): PartesCodigo {
   }
 
   const tamanho = codigo.slice(8, 10);
-  if (!tamanhoValido(tipoNumero as TipoCodigo, tamanho)) {
+  if (!leniente && !tamanhoValido(tipoNumero as TipoCodigo, tamanho)) {
     throw new Error(`Tamanho inválido no código "${codigo}": "${tamanho}".`);
   }
   return { tipo: tipoNumero as TipoCodigo, sequencial, pedra, tamanho };
@@ -141,11 +144,12 @@ export function parseCodigo(codigo: string): PartesCodigo {
  * @example decodificarLegivel("1001230618") // "Anel · modelo 00123 · pedra Vermelho · tam. 18cm"
  */
 export function decodificarLegivel(codigo: string): string {
-  const { tipo, sequencial, pedra, tamanho } = parseCodigo(codigo);
+  // Leniente: dado legado pode ter pedra/tamanho fora da tabela; exibir não pode quebrar.
+  const { tipo, sequencial, pedra, tamanho } = parseCodigo(codigo, true);
   const partes = [
-    buscarTipo(tipo)!.descricao,
+    buscarTipo(tipo)?.descricao ?? `Tipo ${tipo}`,
     `modelo ${sequencial}`,
-    `pedra ${buscarPedra(pedra)!.descricao}`,
+    `pedra ${buscarPedra(pedra)?.descricao ?? pedra}`,
   ];
   if (tamanho !== null) {
     partes.push(`tam. ${tamanho}cm`);
