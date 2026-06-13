@@ -16,7 +16,7 @@
  * NÃO são gravadas — saem no relatório "REVISAR" para correção manual.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { PEDRAS, type TipoCodigo } from "@/lib/codigo/referencia";
@@ -112,8 +112,47 @@ interface RefEntry {
 
 interface Diff {
   codigo: string;
+  categoria: string;
   de: string;
   para: string;
+}
+
+/** Divergência entre dois textos: 0 = iguais, 1 = nada em comum (prioriza revisão). */
+function divergencia(a: string, b: string): number {
+  const palavras = (s: string) =>
+    new Set(
+      s
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .split(/\W+/)
+        .filter((w) => w.length > 2),
+    );
+  const sa = palavras(a);
+  const sb = palavras(b);
+  const inter = [...sa].filter((w) => sb.has(w)).length;
+  const uni = new Set([...sa, ...sb]).size;
+  return uni === 0 ? 0 : 1 - inter / uni;
+}
+
+/** Gera a lista de revisão física (CSV ; ), priorizada por divergência. */
+function salvarRevisao(arquivo: string, diffs: Diff[], revisar: Revisao[]): void {
+  const linhas = ["NIVEL;STATUS;CODIGO;CATEGORIA;DESCRICAO_CONTAGEM;DESCRICAO_REFERENCIA;MOTIVO"];
+  const ordenados = [...diffs].sort((x, y) => divergencia(y.de, y.para) - divergencia(x.de, x.para));
+  for (const d of ordenados) {
+    const score = divergencia(d.de, d.para);
+    const nivel = score > 0.7 ? "ALTA" : score > 0.4 ? "MEDIA" : "BAIXA";
+    linhas.push(
+      `${nivel};DIVERGENTE;${d.codigo};${d.categoria};"${d.de}";"${d.para}";conferir qual nome corresponde ao produto fisico`,
+    );
+  }
+  for (const r of revisar) {
+    linhas.push(`-;NAO_IMPORTADO;${r.codigo};${r.secao};"${r.descricao}";;${r.motivo}`);
+  }
+  writeFileSync(arquivo, linhas.join("\n"), "utf8");
+  console.log(
+    `\n📋 Lista de revisão salva em ${arquivo}: ${diffs.length} divergentes + ${revisar.length} não importados.`,
+  );
 }
 
 /** Referência DE/PARA: código base de 6 dígitos -> lista de {pedra, descrição}. */
@@ -185,7 +224,8 @@ function processar(
       }
       pedra = entry.pedra;
       descricao = entry.descricao;
-      if (descricaoInv && descricaoInv !== descricao) diffs.push({ codigo, de: descricaoInv, para: descricao });
+      if (descricaoInv && descricaoInv !== descricao)
+        diffs.push({ codigo, categoria: nomeSecao, de: descricaoInv, para: descricao });
     } else {
       if (ehPendente) {
         flag("pendente DE/PARA (sem correspondência na referência)");
@@ -290,9 +330,10 @@ async function main(): Promise<void> {
   const arquivo = args.find((a) => !a.startsWith("--"));
   const commit = args.includes("--commit");
   const refArg = args.find((a) => a.startsWith("--referencia="));
+  const revArg = args.find((a) => a.startsWith("--saida-revisao="));
   if (!arquivo) {
     console.error(
-      "Uso: npx tsx scripts/importarInventario.ts <arquivo.csv> [--referencia=<ref.csv>] [--commit]",
+      "Uso: npx tsx scripts/importarInventario.ts <arquivo.csv> [--referencia=<ref.csv>] [--saida-revisao=<rev.csv>] [--commit]",
     );
     process.exit(1);
   }
@@ -302,6 +343,8 @@ async function main(): Promise<void> {
   const { oks, revisar, diffs } = processar(linhas, refMap);
 
   resumo(oks);
+
+  if (revArg) salvarRevisao(revArg.split("=")[1], diffs, revisar);
 
   if (diffs.length > 0) {
     console.log(`\n=== DE/PARA — ${diffs.length} descrições ajustadas pela referência ===`);
