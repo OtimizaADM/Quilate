@@ -17,6 +17,7 @@
  */
 
 import { readFileSync } from "node:fs";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { PEDRAS, type TipoCodigo } from "@/lib/codigo/referencia";
 import { modelos, movimentacoes, variacoes } from "@/db/schema";
@@ -185,7 +186,18 @@ function resumo(oks: ModeloPlano[]): void {
 async function gravar(oks: ModeloPlano[]): Promise<void> {
   let modelosCriados = 0;
   let skusCriados = 0;
+  let jaExistiam = 0;
   for (const m of oks) {
+    // Idempotente: se o (tipo, sequencial) já existe, pula (permite reimportar).
+    const existente = await db
+      .select({ id: modelos.id })
+      .from(modelos)
+      .where(and(eq(modelos.tipo, m.tipo), eq(modelos.sequencial, m.sequencial)))
+      .limit(1);
+    if (existente.length > 0) {
+      jaExistiam += 1;
+      continue;
+    }
     await db.transaction(async (tx) => {
       const [modelo] = await tx
         .insert(modelos)
@@ -217,7 +229,10 @@ async function gravar(oks: ModeloPlano[]): Promise<void> {
       modelosCriados += 1;
     });
   }
-  console.log(`\n✅ Gravado: ${modelosCriados} modelos · ${skusCriados} SKUs (com entrada de estoque).`);
+  console.log(
+    `\n✅ Gravado: ${modelosCriados} modelos · ${skusCriados} SKUs (com entrada de estoque).` +
+      (jaExistiam > 0 ? ` (${jaExistiam} já existiam — pulados.)` : ""),
+  );
 }
 
 async function main(): Promise<void> {
