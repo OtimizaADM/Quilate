@@ -105,9 +105,39 @@ function parseGrade(grade: string): { tamanho: string; quantidade: number }[] {
 
 const parseValor = (s: string): string => s.trim().replace(/\./g, "").replace(",", ".");
 
-function processar(linhas: string[]): { oks: ModeloPlano[]; revisar: Revisao[] } {
+interface RefEntry {
+  pedra: string;
+  descricao: string;
+}
+
+interface Diff {
+  codigo: string;
+  de: string;
+  para: string;
+}
+
+/** Referência DE/PARA: código base de 6 dígitos -> lista de {pedra, descrição}. */
+function carregarReferencia(arquivo: string): Map<string, RefEntry[]> {
+  const mapa = new Map<string, RefEntry[]>();
+  for (const linha of readFileSync(arquivo, "utf8").replace(/^﻿/, "").split(/\r?\n/)) {
+    const cols = linha.split(";").map((c) => c.trim());
+    const codigo = cols[1] ?? "";
+    if (!/^\d{6}$/.test(codigo)) continue;
+    const pedra = ((cols[2] ?? "").split(".")[0] || "").padStart(2, "0");
+    const arr = mapa.get(codigo) ?? [];
+    arr.push({ pedra, descricao: cols[3] ?? "" });
+    mapa.set(codigo, arr);
+  }
+  return mapa;
+}
+
+function processar(
+  linhas: string[],
+  refMap?: Map<string, RefEntry[]>,
+): { oks: ModeloPlano[]; revisar: Revisao[]; diffs: Diff[] } {
   const oks: ModeloPlano[] = [];
   const revisar: Revisao[] = [];
+  const diffs: Diff[] = [];
   let secao: { tipo: TipoCodigo; temGrade: boolean } | null = null;
   let nomeSecao = "";
 
@@ -125,24 +155,44 @@ function processar(linhas: string[]): { oks: ModeloPlano[]; revisar: Revisao[] }
     if (!/^\d+$/.test(c0) || !secao) continue; // pula cabeçalho/subtotal/lixo
 
     const codigo = c0;
-    const descricao = cols[1] ?? "";
-    const flag = (motivo: string) => revisar.push({ secao: nomeSecao, codigo, descricao, motivo });
-
-    if (/pendente|de\/para|de\s*\/\s*para/i.test(descricao)) {
-      flag("anel pendente de DE/PARA");
-      continue;
-    }
+    const descricaoInv = cols[1] ?? "";
+    const flag = (motivo: string) =>
+      revisar.push({ secao: nomeSecao, codigo, descricao: descricaoInv, motivo });
 
     const grade = secao.temGrade ? cols[2] ?? "" : "";
     const valorUnit = secao.temGrade ? cols[4] ?? "" : cols[3] ?? "";
     const qtdSimples = Number((secao.temGrade ? "" : cols[2] ?? "0").replace(/\D/g, "")) || 0;
+    const ehPendente = /pendente|de\/para/i.test(descricaoInv);
 
     const parsed = parseCodigoLegado(codigo, secao.tipo);
     if ("erro" in parsed) {
       flag(parsed.erro);
       continue;
     }
-    const pedra = parsed.pedra ?? inferirPedra(descricao);
+
+    // DE/PARA: resolve pela referência (código base = tipo+seq). Sobrescreve
+    // descrição + pedra com a referência (fonte da verdade) e registra o diff.
+    const refEntries = refMap?.get(`${secao.tipo}${parsed.seq}`);
+    let descricao = descricaoInv;
+    let pedra: string;
+    if (refEntries && refEntries.length > 0) {
+      let entry: RefEntry | undefined;
+      if (refEntries.length === 1) entry = refEntries[0];
+      else if (parsed.pedra) entry = refEntries.find((e) => e.pedra === parsed.pedra);
+      if (!entry) {
+        flag(`referência tem ${refEntries.length} cores — especifique a pedra no código`);
+        continue;
+      }
+      pedra = entry.pedra;
+      descricao = entry.descricao;
+      if (descricaoInv && descricaoInv !== descricao) diffs.push({ codigo, de: descricaoInv, para: descricao });
+    } else {
+      if (ehPendente) {
+        flag("pendente DE/PARA (sem correspondência na referência)");
+        continue;
+      }
+      pedra = parsed.pedra ?? inferirPedra(descricaoInv);
+    }
     if (!CODIGOS_PEDRA.has(pedra)) {
       flag(`pedra inválida (${pedra})`);
       continue;
@@ -162,7 +212,7 @@ function processar(linhas: string[]): { oks: ModeloPlano[]; revisar: Revisao[] }
 
     oks.push({ tipo: secao.tipo, sequencial: parsed.seq, descricao, precoVenda: parseValor(valorUnit), skus });
   }
-  return { oks, revisar };
+  return { oks, revisar, diffs };
 }
 
 function resumo(oks: ModeloPlano[]): void {
@@ -236,18 +286,27 @@ async function gravar(oks: ModeloPlano[]): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const arquivo = process.argv[2];
-  const commit = process.argv.includes("--commit");
+  const args = process.argv.slice(2);
+  const arquivo = args.find((a) => !a.startsWith("--"));
+  const commit = args.includes("--commit");
+  const refArg = args.find((a) => a.startsWith("--referencia="));
   if (!arquivo) {
-    console.error("Uso: npx tsx scripts/importarInventario.ts <arquivo.csv> [--commit]");
+    console.error(
+      "Uso: npx tsx scripts/importarInventario.ts <arquivo.csv> [--referencia=<ref.csv>] [--commit]",
+    );
     process.exit(1);
   }
 
-  const conteudo = readFileSync(arquivo, "utf8").replace(/^﻿/, "");
-  const linhas = conteudo.split(/\r?\n/);
-  const { oks, revisar } = processar(linhas);
+  const refMap = refArg ? carregarReferencia(refArg.split("=")[1]) : undefined;
+  const linhas = readFileSync(arquivo, "utf8").replace(/^﻿/, "").split(/\r?\n/);
+  const { oks, revisar, diffs } = processar(linhas, refMap);
 
   resumo(oks);
+
+  if (diffs.length > 0) {
+    console.log(`\n=== DE/PARA — ${diffs.length} descrições ajustadas pela referência ===`);
+    for (const d of diffs) console.log(`  ${d.codigo}: "${d.de}"  →  "${d.para}"`);
+  }
 
   if (revisar.length > 0) {
     console.log(`\n=== REVISAR (${revisar.length} linhas NÃO importadas) ===`);
