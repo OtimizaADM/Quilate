@@ -10,6 +10,7 @@ import { TIPOS } from "@/lib/codigo/referencia";
 import { formatarReais } from "@/lib/format";
 import { consolidarPorCategoria } from "@/lib/produtos/consolidarPorCategoria";
 import type { Produto, StatusFiltro } from "@/lib/produtos/listarProdutos";
+import { corresponde } from "@/lib/texto/buscaProduto";
 
 interface Colecao {
   id: string;
@@ -28,6 +29,7 @@ export function ListaProdutos() {
   const [colecaoId, setColecaoId] = useState("");
   const [fornecedorId, setFornecedorId] = useState("");
   const [status, setStatus] = useState<StatusFiltro>("ativos");
+  const [busca, setBusca] = useState("");
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -70,11 +72,24 @@ export function ListaProdutos() {
     await carregar();
   }
 
-  const resumo = consolidarPorCategoria(produtos);
+  const visiveis = produtos.filter((p) =>
+    corresponde(busca, { codigo: p.codigoBase, descricao: p.descricao }),
+  );
+  const resumo = consolidarPorCategoria(visiveis);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium">Buscar</span>
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Código ou descrição"
+            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+          />
+        </label>
         <Select rotulo="Tipo" valor={tipo} aoMudar={setTipo} opcaoTodos="Todos">
           {TIPOS.map((t) => (
             <option key={t.codigo} value={String(t.codigo)}>
@@ -126,7 +141,7 @@ export function ListaProdutos() {
         </div>
       )}
 
-      {produtos.length === 0 ? (
+      {visiveis.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum produto encontrado.</p>
       ) : (
         <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
@@ -145,7 +160,7 @@ export function ListaProdutos() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {produtos.map((p) => (
+              {visiveis.map((p) => (
                 <tr key={p.id} className={p.ativo ? "" : "text-gray-400"}>
                   <td className="px-3 py-2 font-mono">{p.codigoBase}</td>
                   <td className="px-3 py-2">{p.descricao ?? p.categoria}</td>

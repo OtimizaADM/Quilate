@@ -7,10 +7,12 @@ import { and, asc, eq, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/client";
 import { modelos, saldos, variacoes } from "@/db/schema";
 import type { TipoCodigo } from "@/lib/codigo/referencia";
+import { corresponde } from "@/lib/texto/buscaProduto";
 
 export interface FiltroCatalogo {
   tipo?: TipoCodigo;
   pedra?: string;
+  busca?: string;
 }
 
 export interface ItemCatalogo {
@@ -31,6 +33,7 @@ export async function buscarCatalogo(
   const linhas = await db
     .select({
       codigo: variacoes.codigo,
+      descricao: modelos.descricao,
       imagemPath: modelos.imagemPath,
       precoVenda: modelos.precoVenda,
       saldo: saldos.saldo,
@@ -41,10 +44,13 @@ export async function buscarCatalogo(
     .where(and(...condicoes))
     .orderBy(asc(modelos.tipo), asc(modelos.sequencial), asc(variacoes.codigo));
 
-  return linhas.map((l) => ({
-    codigo: l.codigo,
-    imagemPath: l.imagemPath,
-    precoVenda: l.precoVenda === null ? null : Number(l.precoVenda),
-    saldo: Number(l.saldo ?? 0),
-  }));
+  const termo = filtro.busca?.trim();
+  return linhas
+    .filter((l) => !termo || corresponde(termo, { codigo: l.codigo, descricao: l.descricao }))
+    .map((l) => ({
+      codigo: l.codigo,
+      imagemPath: l.imagemPath,
+      precoVenda: l.precoVenda === null ? null : Number(l.precoVenda),
+      saldo: Number(l.saldo ?? 0),
+    }));
 }

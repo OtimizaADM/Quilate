@@ -19,10 +19,14 @@ function tipoValido(valor: string | undefined): TipoCodigo | undefined {
 export default async function PaginaCatalogo({
   searchParams,
 }: {
-  searchParams: Promise<{ tipo?: string; pedra?: string }>;
+  searchParams: Promise<{ tipo?: string; pedra?: string; busca?: string }>;
 }) {
-  const { tipo, pedra } = await searchParams;
-  const itens = await buscarCatalogo(db, { tipo: tipoValido(tipo), pedra: pedra || undefined });
+  const { tipo, pedra, busca } = await searchParams;
+  const itens = await buscarCatalogo(db, {
+    tipo: tipoValido(tipo),
+    pedra: pedra || undefined,
+    busca: busca || undefined,
+  });
 
   return (
     <section className="space-y-6">
@@ -31,7 +35,13 @@ export default async function PaginaCatalogo({
         <p className="text-sm text-gray-500">{itens.length} variação(ões)</p>
       </div>
 
-      <FiltroCatalogo tipos={TIPOS} pedras={PEDRAS} tipoAtual={tipo ?? ""} pedraAtual={pedra ?? ""} />
+      <FiltroCatalogo
+        tipos={TIPOS}
+        pedras={PEDRAS}
+        tipoAtual={tipo ?? ""}
+        pedraAtual={pedra ?? ""}
+        buscaAtual={busca ?? ""}
+      />
 
       {itens.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum produto encontrado com esses filtros.</p>
