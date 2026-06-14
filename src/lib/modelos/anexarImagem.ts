@@ -1,16 +1,19 @@
 /**
  * Etapa 2 do cadastro via WhatsApp: anexar a imagem ao modelo recém-criado.
  *
- * O bot cria o modelo sem imagem (cadastrarViaIntegracao) e, em seguida, o
- * operador envia a foto. Como o sistema é single-tenant/usuário único, o modelo
- * "aguardando imagem" é o mais recente com imagem nula — não há ambiguidade.
+ * Só anexa a um modelo cadastrado nos últimos minutos (JANELA_MINUTOS) — um
+ * cadastro de verdade que acabou de pedir a foto. Isso evita que uma foto
+ * qualquer (ex.: etiqueta de uma venda) grude num produto antigo importado sem
+ * imagem. Se não houver cadastro recente, recusa (404) em vez de anexar errado.
  */
 
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import type { Database } from "@/db/client";
 import { modelos, variacoes } from "@/db/schema";
 import { salvarImagem } from "@/lib/imagens/salvarImagem";
 import { ErroCadastroIntegracao } from "./cadastrarViaIntegracao";
+
+const JANELA_MINUTOS = 15;
 
 export interface ResultadoAnexarImagem {
   modeloId: string;
@@ -22,15 +25,19 @@ export async function anexarImagemUltimoModelo(
   db: Database,
   arquivo: File,
 ): Promise<ResultadoAnexarImagem> {
+  const limite = new Date(Date.now() - JANELA_MINUTOS * 60 * 1000);
   const [pendente] = await db
     .select({ id: modelos.id })
     .from(modelos)
-    .where(isNull(modelos.imagemPath))
+    .where(and(isNull(modelos.imagemPath), gt(modelos.criadoEm, limite)))
     .orderBy(desc(modelos.criadoEm))
     .limit(1);
 
   if (!pendente) {
-    throw new ErroCadastroIntegracao("Nenhum cadastro aguardando imagem.", 404);
+    throw new ErroCadastroIntegracao(
+      "Nenhum cadastro recente aguardando foto. Cadastre o produto primeiro; ou, para consultar/vender, digite o código.",
+      404,
+    );
   }
 
   const imagemPath = await salvarImagem(arquivo);
