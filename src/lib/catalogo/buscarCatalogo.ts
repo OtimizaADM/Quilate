@@ -1,11 +1,9 @@
-/**
- * Catálogo (tela 7.3): SKUs ativos com imagem, preço e saldo, com filtros
- * opcionais por tipo e por pedra.
- */
+/** Catálogo consolidado: um card por modelo, com todas as variações e saldos. */
 
-import { and, asc, eq, type SQL } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import type { Database } from "@/db/client";
 import { modelos, saldos, variacoes } from "@/db/schema";
+import { montarCodigoBase } from "@/lib/codigo/codigo";
 import type { TipoCodigo } from "@/lib/codigo/referencia";
 import { corresponde } from "@/lib/texto/buscaProduto";
 
@@ -15,42 +13,113 @@ export interface FiltroCatalogo {
   busca?: string;
 }
 
-export interface ItemCatalogo {
+export interface VariacaoCatalogo {
   codigo: string;
+  pedra: string | null;
+  tamanho: string | null;
+  saldo: number;
+}
+
+export interface ModeloCatalogo {
+  id: string;
+  tipo: TipoCodigo;
+  sequencial: string;
+  codigoBase: string;
+  descricao: string | null;
   imagemPath: string | null;
   precoVenda: number | null;
-  saldo: number;
+  saldoTotal: number;
+  variacoes: VariacaoCatalogo[];
+}
+
+export interface LinhaCatalogo {
+  modeloId: string;
+  tipo: number;
+  sequencial: string;
+  descricao: string | null;
+  imagemPath: string | null;
+  precoVenda: string | null;
+  codigo: string;
+  pedra: string | null;
+  tamanho: string | null;
+  saldo: number | null;
+}
+
+export function agruparCatalogo(linhas: readonly LinhaCatalogo[]): ModeloCatalogo[] {
+  const porModelo = new Map<string, ModeloCatalogo>();
+
+  for (const linha of linhas) {
+    const tipo = linha.tipo as TipoCodigo;
+    const modelo = porModelo.get(linha.modeloId) ?? {
+      id: linha.modeloId,
+      tipo,
+      sequencial: linha.sequencial,
+      codigoBase: montarCodigoBase(tipo, linha.sequencial),
+      descricao: linha.descricao,
+      imagemPath: linha.imagemPath,
+      precoVenda: linha.precoVenda === null ? null : Number(linha.precoVenda),
+      saldoTotal: 0,
+      variacoes: [],
+    };
+    const saldo = Number(linha.saldo ?? 0);
+    modelo.variacoes.push({
+      codigo: linha.codigo,
+      pedra: linha.pedra,
+      tamanho: linha.tamanho,
+      saldo,
+    });
+    modelo.saldoTotal += saldo;
+    porModelo.set(linha.modeloId, modelo);
+  }
+
+  return [...porModelo.values()];
+}
+
+export function filtrarCatalogo(
+  modelosCatalogo: readonly ModeloCatalogo[],
+  filtro: FiltroCatalogo,
+): ModeloCatalogo[] {
+  const termo = filtro.busca?.trim();
+  return modelosCatalogo.filter((modelo) => {
+    if (filtro.tipo !== undefined && modelo.tipo !== filtro.tipo) return false;
+    if (filtro.pedra && !modelo.variacoes.some((variacao) => variacao.pedra === filtro.pedra)) {
+      return false;
+    }
+    if (
+      termo &&
+      !corresponde(termo, {
+        codigo: [modelo.codigoBase, ...modelo.variacoes.map((variacao) => variacao.codigo)].join(" "),
+        descricao: modelo.descricao,
+      })
+    ) {
+      return false;
+    }
+    return true;
+  });
 }
 
 export async function buscarCatalogo(
   db: Database,
   filtro: FiltroCatalogo,
-): Promise<ItemCatalogo[]> {
-  const condicoes: SQL[] = [eq(variacoes.ativo, true), eq(modelos.ativo, true)];
-  if (filtro.tipo !== undefined) condicoes.push(eq(modelos.tipo, filtro.tipo));
-  if (filtro.pedra) condicoes.push(eq(variacoes.pedra, filtro.pedra));
-
+): Promise<ModeloCatalogo[]> {
   const linhas = await db
     .select({
-      codigo: variacoes.codigo,
+      modeloId: modelos.id,
+      tipo: modelos.tipo,
+      sequencial: modelos.sequencial,
       descricao: modelos.descricao,
       imagemPath: modelos.imagemPath,
       precoVenda: modelos.precoVenda,
+      codigo: variacoes.codigo,
+      pedra: variacoes.pedra,
+      tamanho: variacoes.tamanho,
       saldo: saldos.saldo,
     })
     .from(variacoes)
     .innerJoin(modelos, eq(modelos.id, variacoes.modeloId))
     .leftJoin(saldos, eq(saldos.variacaoId, variacoes.id))
-    .where(and(...condicoes))
+    .where(and(eq(variacoes.ativo, true), eq(modelos.ativo, true)))
     .orderBy(asc(modelos.tipo), asc(modelos.sequencial), asc(variacoes.codigo));
 
-  const termo = filtro.busca?.trim();
-  return linhas
-    .filter((l) => !termo || corresponde(termo, { codigo: l.codigo, descricao: l.descricao }))
-    .map((l) => ({
-      codigo: l.codigo,
-      imagemPath: l.imagemPath,
-      precoVenda: l.precoVenda === null ? null : Number(l.precoVenda),
-      saldo: Number(l.saldo ?? 0),
-    }));
+  return filtrarCatalogo(agruparCatalogo(linhas), filtro);
 }
