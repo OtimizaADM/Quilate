@@ -62,6 +62,27 @@ arquivo de imagem do modelo na deleção física.
 Regressão: teste garantindo que inativar não remove imagem e que excluir chama
 a remoção do arquivo (com fake de filesystem).
 
+### 1.1 Garantia: código volta a ser utilizável após exclusão
+
+Requisito explícito: ao excluir fisicamente o `100105`, esse código deve ficar
+disponível de novo. Isso já é consequência do esquema atual e deve ser mantido:
+
+- O sequencial é gerado como `max(sequencial::int) + 1` por tipo
+  (`proximoSequencial` em `src/lib/codigo/codigo.ts`).
+- `excluirProduto` apaga fisicamente `variacoes` (liberando o `UNIQUE` de
+  `codigo`) e `modelos` (liberando o `max`).
+- Logo, ao excluir o modelo de **maior** sequencial de um tipo, o próximo
+  cadastro daquele tipo regenera exatamente aquele sequencial/código. `00105` é
+  hoje o maior Anel, então excluí-lo libera `100105` para o próximo cadastro.
+
+Limitação assumida (fora de escopo mudar): se existir um modelo com sequencial
+maior, o excluído vira um "buraco" e não é reaproveitado — inerente ao esquema
+`max+1`.
+
+Regressão: teste em `cadastrarModelo`/`excluirProduto` — cadastrar tipo Anel
+(gera `00105` como maior), excluir, cadastrar de novo e verificar que o novo
+sequencial é `00105`.
+
 ---
 
 ## 2. Novos campos no cadastro
