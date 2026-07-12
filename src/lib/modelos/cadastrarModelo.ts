@@ -15,7 +15,7 @@
 import { sql } from "drizzle-orm";
 import type { Database } from "@/db/client";
 import { modelos, movimentacoes, variacoes } from "@/db/schema";
-import { proximoSequencial } from "@/lib/codigo/codigo";
+import { proximoSequencialLivre } from "@/lib/codigo/codigo";
 import type { TipoCodigo } from "@/lib/codigo/referencia";
 import { entradasIniciais, type QuantidadeSku } from "./entradasIniciais";
 import { gerarVariacoes } from "./gerarVariacoes";
@@ -42,13 +42,22 @@ export interface ResultadoCadastroModelo {
 
 type Transacao = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
-/** Lê o maior sequencial já usado no tipo (NULL → nenhum modelo ainda). */
-async function maiorSequencial(tx: Transacao, tipo: TipoCodigo): Promise<number | null> {
-  const [linha] = await tx
-    .select({ maior: sql<number | null>`max(${modelos.sequencial}::int)` })
+/** Calcula o próximo número automático sem deixar códigos históricos criarem saltos. */
+async function proximoSequencialAutomatico(
+  tx: Transacao,
+  tipo: TipoCodigo,
+): Promise<string> {
+  const linhas = await tx
+    .select({ sequencial: modelos.sequencial, origemCodigo: modelos.origemCodigo })
     .from(modelos)
     .where(sql`${modelos.tipo} = ${tipo}`);
-  return linha?.maior ?? null;
+
+  const automaticos = linhas
+    .filter((linha) => linha.origemCodigo === "automatico")
+    .map((linha) => Number(linha.sequencial));
+  const maiorAutomatico = automaticos.length > 0 ? Math.max(...automaticos) : null;
+  const ocupados = new Set(linhas.map((linha) => Number(linha.sequencial)));
+  return proximoSequencialLivre(maiorAutomatico, ocupados);
 }
 
 export async function cadastrarModelo(
@@ -56,7 +65,7 @@ export async function cadastrarModelo(
   entrada: EntradaCadastroModelo,
 ): Promise<ResultadoCadastroModelo> {
   return db.transaction(async (tx) => {
-    const sequencial = proximoSequencial(await maiorSequencial(tx, entrada.tipo));
+    const sequencial = await proximoSequencialAutomatico(tx, entrada.tipo);
 
     const variacoesGeradas = gerarVariacoes({
       tipo: entrada.tipo,
@@ -77,6 +86,7 @@ export async function cadastrarModelo(
         imagemPath: entrada.imagemPath,
         colecaoId: entrada.colecaoId,
         fornecedorId: entrada.fornecedorId,
+        origemCodigo: "automatico",
       })
       .returning({ id: modelos.id });
 

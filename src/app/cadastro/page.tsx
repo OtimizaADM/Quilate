@@ -7,6 +7,7 @@
 
 import { db } from "@/db/client";
 import { FormularioCadastroModelo } from "@/components/FormularioCadastroModelo";
+import { FormularioCodigoExistente } from "@/components/FormularioCodigoExistente";
 import { PEDRAS, TAMANHOS_VALIDOS, TIPOS } from "@/lib/codigo/referencia";
 import { listarColecoes } from "@/lib/colecoes/colecoes";
 import { listarFornecedores } from "@/lib/fornecedores/fornecedores";
@@ -25,6 +26,13 @@ export default async function PaginaCadastro() {
         <h1 className="text-2xl font-semibold">Cadastro de modelo</h1>
         <p className="text-sm text-gray-500">
           O sistema gera o sequencial e cria as variações (SKUs) automaticamente.
+        </p>
+      </div>
+      <FormularioCodigoExistente />
+      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+        <h2 className="text-lg font-semibold">Cadastrar novo modelo sequencial</h2>
+        <p className="text-sm text-gray-500">
+          Para produtos novos, mantenha o cadastro completo abaixo.
         </p>
       </div>
       <FormularioCadastroModelo

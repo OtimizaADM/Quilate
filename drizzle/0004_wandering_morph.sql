@@ -1,0 +1,2 @@
+ALTER TABLE "modelos" ADD COLUMN "origem_codigo" text DEFAULT 'automatico' NOT NULL;--> statement-breakpoint
+ALTER TABLE "modelos" ADD CONSTRAINT "modelos_origem_codigo" CHECK ("modelos"."origem_codigo" in ('automatico','existente'));
