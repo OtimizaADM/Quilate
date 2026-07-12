@@ -46,6 +46,19 @@ export function proximoSequencial(maiorSequencialAtual: number | null): string {
 }
 
 /**
+ * Próximo sequencial automático, ignorando saltos causados por códigos históricos
+ * e pulando posições que já estejam ocupadas por qualquer origem.
+ */
+export function proximoSequencialLivre(
+  maiorSequencialAutomatico: number | null,
+  sequenciaisOcupados: ReadonlySet<number>,
+): string {
+  let candidato = (maiorSequencialAutomatico ?? 0) + 1;
+  while (sequenciaisOcupados.has(candidato)) candidato += 1;
+  return formatarSequencial(candidato);
+}
+
+/**
  * Código base do produto (modelo): apenas tipo + sequencial, sem pedra/tamanho.
  * Útil para exibir o "código do produto" antes das variações.
  * @example montarCodigoBase(1, "00123") // "100123"

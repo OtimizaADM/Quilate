@@ -6,6 +6,7 @@ import {
   montarCodigoBase,
   parseCodigo,
   proximoSequencial,
+  proximoSequencialLivre,
 } from "./codigo";
 
 describe("montarCodigoBase", () => {
@@ -42,6 +43,20 @@ describe("proximoSequencial", () => {
   it("incrementa o maior sequencial existente", () => {
     expect(proximoSequencial(122)).toBe("00123");
     expect(proximoSequencial(1)).toBe("00002");
+  });
+});
+
+describe("proximoSequencialLivre", () => {
+  it("mantém o sequencial automático mesmo quando existe um código histórico alto", () => {
+    expect(proximoSequencialLivre(105, new Set([350]))).toBe("00106");
+  });
+
+  it("pula sequenciais históricos que ocupam o próximo número automático", () => {
+    expect(proximoSequencialLivre(5, new Set([6, 7]))).toBe("00008");
+  });
+
+  it("começa em 00001 quando não há cadastro automático", () => {
+    expect(proximoSequencialLivre(null, new Set())).toBe("00001");
   });
 });
 

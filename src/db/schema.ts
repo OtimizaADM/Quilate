@@ -57,6 +57,7 @@ export const modelos = pgTable(
       .notNull()
       .references(() => tipos.codigo),
     sequencial: char("sequencial", { length: 5 }).notNull(), // gerado pelo sistema
+    origemCodigo: text("origem_codigo").notNull().default("automatico"),
     descricao: text("descricao"),
     modeloFornecedor: text("modelo_fornecedor"),
     precoCusto: numeric("preco_custo", { precision: 10, scale: 2 }),
@@ -70,7 +71,10 @@ export const modelos = pgTable(
     ativo: boolean("ativo").notNull().default(true),
     criadoEm: timestamp("criado_em", { withTimezone: true }).defaultNow(),
   },
-  (t) => [unique("modelos_tipo_sequencial").on(t.tipo, t.sequencial)],
+  (t) => [
+    unique("modelos_tipo_sequencial").on(t.tipo, t.sequencial),
+    check("modelos_origem_codigo", sql`${t.origemCodigo} in ('automatico','existente')`),
+  ],
 );
 
 // ===== VARIAÇÕES = SKUs (geradas a partir do modelo) =====
