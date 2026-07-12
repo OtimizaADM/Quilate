@@ -44,7 +44,7 @@ describe("gerarVariacoes", () => {
 
   it("propaga erro de tamanho inválido vindo de montarCodigo", () => {
     expect(() =>
-      gerarVariacoes({ tipo: 1, sequencial: "00001", pedras: ["00"], tamanhos: ["17"] }),
-    ).toThrow("17");
+      gerarVariacoes({ tipo: 1, sequencial: "00001", pedras: ["00"], tamanhos: ["7"] }),
+    ).toThrow("7");
   });
 });
