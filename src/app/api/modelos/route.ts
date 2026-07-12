@@ -15,15 +15,25 @@ import { esquemaCadastroModelo } from "@/lib/modelos/validarCadastro";
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const form = await request.formData();
 
+  const quantidadesBruto = form.get("quantidades");
+  let quantidades: unknown = [];
+  try {
+    quantidades = quantidadesBruto ? JSON.parse(String(quantidadesBruto)) : [];
+  } catch {
+    return NextResponse.json({ erro: "Campo 'quantidades' inválido (JSON)." }, { status: 422 });
+  }
+
   const parsed = esquemaCadastroModelo.safeParse({
     tipo: form.get("tipo"),
     descricao: form.get("descricao"),
+    modeloFornecedor: form.get("modeloFornecedor"),
     precoCusto: form.get("precoCusto"),
     precoVenda: form.get("precoVenda"),
     colecaoId: form.get("colecaoId"),
     fornecedorId: form.get("fornecedorId"),
     pedras: form.getAll("pedras").map(String),
     tamanhos: form.getAll("tamanhos").map(String),
+    quantidades,
   });
 
   if (!parsed.success) {
@@ -47,6 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const resultado = await cadastrarModelo(db, {
       tipo: parsed.data.tipo,
       descricao: parsed.data.descricao,
+      modeloFornecedor: parsed.data.modeloFornecedor,
       precoCusto: parsed.data.precoCusto,
       precoVenda: parsed.data.precoVenda,
       imagemPath,
@@ -54,6 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       fornecedorId: parsed.data.fornecedorId,
       pedras: parsed.data.pedras,
       tamanhos: parsed.data.tamanhos,
+      quantidades: parsed.data.quantidades,
     });
 
     return NextResponse.json(resultado, { status: 201 });

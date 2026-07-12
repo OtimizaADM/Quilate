@@ -10,7 +10,6 @@
 import {
   buscarPedra,
   buscarTipo,
-  tamanhoValido,
   tipoTemTamanho,
   type TipoCodigo,
 } from "./referencia";
@@ -88,9 +87,9 @@ export function montarCodigo(partes: PartesCodigo): string {
     return `${tipo}${sequencial}${pedra}`;
   }
 
-  if (tamanho === null || !tamanhoValido(tipo, tamanho)) {
+  if (tamanho === null || !/^\d{2}$/.test(tamanho)) {
     throw new Error(
-      `Tamanho inválido para o tipo ${tipo}: "${tamanho}". Esperado um dos tamanhos válidos do tipo.`,
+      `Tamanho inválido para o tipo ${tipo}: "${tamanho}". Esperado 2 dígitos (ex.: "18").`,
     );
   }
   return `${tipo}${sequencial}${pedra}${tamanho}`;
@@ -133,7 +132,7 @@ export function parseCodigo(codigo: string, leniente = false): PartesCodigo {
   }
 
   const tamanho = codigo.slice(8, 10);
-  if (!leniente && !tamanhoValido(tipoNumero as TipoCodigo, tamanho)) {
+  if (!leniente && !/^\d{2}$/.test(tamanho)) {
     throw new Error(`Tamanho inválido no código "${codigo}": "${tamanho}".`);
   }
   return { tipo: tipoNumero as TipoCodigo, sequencial, pedra, tamanho };

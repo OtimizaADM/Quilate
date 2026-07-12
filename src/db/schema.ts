@@ -58,6 +58,7 @@ export const modelos = pgTable(
       .references(() => tipos.codigo),
     sequencial: char("sequencial", { length: 5 }).notNull(), // gerado pelo sistema
     descricao: text("descricao"),
+    modeloFornecedor: text("modelo_fornecedor"),
     precoCusto: numeric("preco_custo", { precision: 10, scale: 2 }),
     precoVenda: numeric("preco_venda", { precision: 10, scale: 2 }),
     imagemPath: text("imagem_path"),

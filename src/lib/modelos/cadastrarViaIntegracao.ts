@@ -146,6 +146,7 @@ export async function cadastrarViaIntegracao(
   return cadastrarModelo(db, {
     tipo: validado.data.tipo,
     descricao: validado.data.descricao,
+    modeloFornecedor: validado.data.modeloFornecedor,
     precoCusto: validado.data.precoCusto,
     precoVenda: validado.data.precoVenda,
     imagemPath: null, // imagem é anexada na etapa 2 (anexarImagem)
@@ -153,5 +154,6 @@ export async function cadastrarViaIntegracao(
     fornecedorId: validado.data.fornecedorId,
     pedras: validado.data.pedras,
     tamanhos: validado.data.tamanhos,
+    quantidades: validado.data.quantidades,
   });
 }

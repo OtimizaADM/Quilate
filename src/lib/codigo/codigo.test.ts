@@ -64,11 +64,19 @@ describe("montarCodigo", () => {
     ).toThrow("não tem tamanho");
   });
 
-  it("recusa tamanho inválido para o tipo, citando o valor", () => {
-    // 17 não é tamanho válido de anel (só pares 14..32)
-    expect(() =>
+  it("aceita tamanho fora da lista de sugestões, desde que 2 dígitos (ex.: 17)", () => {
+    expect(
       montarCodigo({ tipo: 1, sequencial: "00001", pedra: "00", tamanho: "17" }),
-    ).toThrow("17");
+    ).toBe("1000010017");
+  });
+
+  it("recusa tamanho com formato inválido, citando o valor", () => {
+    expect(() =>
+      montarCodigo({ tipo: 1, sequencial: "00001", pedra: "00", tamanho: "7" }),
+    ).toThrow("7");
+    expect(() =>
+      montarCodigo({ tipo: 1, sequencial: "00001", pedra: "00", tamanho: "170" }),
+    ).toThrow("170");
   });
 
   it("recusa tamanho ausente para tipo que exige tamanho", () => {

@@ -10,6 +10,7 @@
 import { eq, sql } from "drizzle-orm";
 import type { Database } from "@/db/client";
 import { modelos, movimentacoes, variacoes } from "@/db/schema";
+import { removerImagem } from "@/lib/imagens/removerImagem";
 
 type Transacao = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
@@ -44,21 +45,27 @@ async function qtdMovimentacoes(tx: Transacao, modeloId: string): Promise<number
 /**
  * Exclui fisicamente o produto e suas variações. Recusa (erro) se já houve
  * qualquer movimentação — apagar quebraria relatórios e deixaria órfãos.
+ * Remove também o arquivo de imagem após o commit.
  */
 export async function excluirProduto(db: Database, modeloId: string): Promise<void> {
-  await db.transaction(async (tx) => {
+  const imagemPath = await db.transaction(async (tx) => {
     if ((await qtdMovimentacoes(tx, modeloId)) > 0) {
       throw new Error(
         `Produto ${modeloId} já teve movimentação; não pode ser excluído. Inative-o.`,
       );
     }
-    await tx.delete(variacoes).where(eq(variacoes.modeloId, modeloId));
-    const apagado = await tx
-      .delete(modelos)
-      .where(eq(modelos.id, modeloId))
-      .returning({ id: modelos.id });
-    if (apagado.length === 0) {
+    const [modelo] = await tx
+      .select({ imagemPath: modelos.imagemPath })
+      .from(modelos)
+      .where(eq(modelos.id, modeloId));
+    if (!modelo) {
       throw new Error(`Produto não encontrado: ${modeloId}.`);
     }
+    await tx.delete(variacoes).where(eq(variacoes.modeloId, modeloId));
+    await tx.delete(modelos).where(eq(modelos.id, modeloId));
+    return modelo.imagemPath;
   });
+
+  // Fora da transação: apagar o arquivo não deve abortar a exclusão no banco.
+  if (imagemPath) await removerImagem(imagemPath);
 }
