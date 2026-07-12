@@ -4,7 +4,9 @@
  * Orquestra, dentro de UMA transação:
  *  1. geração do próximo sequencial do tipo (maior existente + 1);
  *  2. inserção do modelo;
- *  3. geração e inserção de todas as variações (SKUs) selecionadas.
+ *  3. geração e inserção de todas as variações (SKUs) selecionadas;
+ *  4. inserção de uma movimentação de entrada para cada SKU com quantidade > 0
+ *     (origem "manual", observação "Cadastro inicial" — ver entradasIniciais).
  *
  * A transação garante que o sequencial não colida sob concorrência: o UNIQUE
  * (tipo, sequencial) no banco é a rede de segurança final caso isso ocorra.
@@ -12,14 +14,16 @@
 
 import { sql } from "drizzle-orm";
 import type { Database } from "@/db/client";
-import { modelos, variacoes } from "@/db/schema";
+import { modelos, movimentacoes, variacoes } from "@/db/schema";
 import { proximoSequencial } from "@/lib/codigo/codigo";
 import type { TipoCodigo } from "@/lib/codigo/referencia";
+import { entradasIniciais, type QuantidadeSku } from "./entradasIniciais";
 import { gerarVariacoes } from "./gerarVariacoes";
 
 export interface EntradaCadastroModelo {
   tipo: TipoCodigo;
   descricao: string | null;
+  modeloFornecedor: string | null;
   precoCusto: string | null; // string p/ casar com numeric do Postgres
   precoVenda: string | null;
   imagemPath: string | null;
@@ -27,6 +31,7 @@ export interface EntradaCadastroModelo {
   fornecedorId: string | null;
   pedras: readonly string[];
   tamanhos: readonly string[];
+  quantidades: readonly QuantidadeSku[];
 }
 
 export interface ResultadoCadastroModelo {
@@ -66,6 +71,7 @@ export async function cadastrarModelo(
         tipo: entrada.tipo,
         sequencial,
         descricao: entrada.descricao,
+        modeloFornecedor: entrada.modeloFornecedor,
         precoCusto: entrada.precoCusto,
         precoVenda: entrada.precoVenda,
         imagemPath: entrada.imagemPath,
@@ -74,14 +80,32 @@ export async function cadastrarModelo(
       })
       .returning({ id: modelos.id });
 
-    await tx.insert(variacoes).values(
-      variacoesGeradas.map((v) => ({
-        modeloId: modelo.id,
-        pedra: v.pedra,
-        tamanho: v.tamanho,
-        codigo: v.codigo,
-      })),
-    );
+    const variacoesInseridas = await tx
+      .insert(variacoes)
+      .values(
+        variacoesGeradas.map((v) => ({
+          modeloId: modelo.id,
+          pedra: v.pedra,
+          tamanho: v.tamanho,
+          codigo: v.codigo,
+        })),
+      )
+      .returning({ id: variacoes.id, pedra: variacoes.pedra, tamanho: variacoes.tamanho });
+
+    const entradas = entradasIniciais(variacoesInseridas, entrada.quantidades);
+    if (entradas.length > 0) {
+      await tx.insert(movimentacoes).values(
+        entradas.map((e) => ({
+          variacaoId: e.variacaoId,
+          tipoMov: "entrada" as const,
+          quantidade: e.quantidade,
+          origem: "manual" as const,
+          observacao: "Cadastro inicial",
+          colecaoId: entrada.colecaoId,
+          fornecedorId: entrada.fornecedorId,
+        })),
+      );
+    }
 
     return {
       modeloId: modelo.id,
