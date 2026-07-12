@@ -294,7 +294,7 @@ export function FormularioCadastroModelo({
                 sem imagem
               </div>
             )}
-            <label className="cursor-pointer rounded border border-amber-600 px-4 py-2 font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950">
+            <label className="cursor-pointer rounded border border-ouro-500 px-4 py-2 font-medium text-ouro-700 hover:bg-petroleo-50 dark:text-ouro-300 dark:hover:bg-petroleo-950">
               {previewImagem ? "Trocar imagem" : "Selecionar imagem"}
               <input
                 name="imagem"
@@ -366,7 +366,7 @@ export function FormularioCadastroModelo({
 
         <button
           type="submit"
-          className="rounded bg-amber-600 px-4 py-2 font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+          className="rounded bg-petroleo-700 px-4 py-2 font-medium text-white hover:bg-petroleo-800 disabled:opacity-50"
         >
           Revisar e cadastrar
         </button>

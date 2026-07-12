@@ -37,32 +37,32 @@ export function FiltroCatalogo({ tipos, pedras, tipoAtual, pedraAtual, buscaAtua
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      <form onSubmit={buscar} className="flex items-end gap-2">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Buscar</span>
+    <div className="quilates-panel flex flex-wrap items-end gap-4 rounded-2xl p-4 sm:p-5 dark:bg-petroleo-900">
+      <form onSubmit={buscar} className="flex min-w-[16rem] flex-1 items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1.5 text-sm">
+          <span className="font-semibold text-petroleo-900 dark:text-petroleo-50">Buscar</span>
           <input
             type="text"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Código ou descrição"
-            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+            className="w-full rounded-xl border border-[#cbd9d4] bg-[#f9fbfa] px-4 py-2.5 text-petroleo-950 placeholder:text-[#93a19e] focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
           />
         </label>
         <button
           type="submit"
-          className="rounded bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 dark:bg-gray-700"
+          className="rounded-xl bg-petroleo-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-petroleo-800"
         >
           Buscar
         </button>
       </form>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Tipo</span>
+      <label className="flex min-w-36 flex-col gap-1.5 text-sm">
+        <span className="font-semibold text-petroleo-900 dark:text-petroleo-50">Tipo</span>
         <select
           value={tipoAtual}
           onChange={(e) => aplicar("tipo", e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-xl border border-[#cbd9d4] bg-[#f9fbfa] px-4 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
         >
           <option value="">Todos</option>
           {tipos.map((t) => (
@@ -73,12 +73,12 @@ export function FiltroCatalogo({ tipos, pedras, tipoAtual, pedraAtual, buscaAtua
         </select>
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Pedra</span>
+      <label className="flex min-w-44 flex-col gap-1.5 text-sm">
+        <span className="font-semibold text-petroleo-900 dark:text-petroleo-50">Pedra</span>
         <select
           value={pedraAtual}
           onChange={(e) => aplicar("pedra", e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-xl border border-[#cbd9d4] bg-[#f9fbfa] px-4 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
         >
           <option value="">Todas</option>
           {pedras.map((p) => (

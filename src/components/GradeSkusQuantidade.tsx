@@ -90,13 +90,13 @@ export function GradeSkusQuantidade({
               value={outro}
               onChange={(e) => setOutro(e.target.value)}
               placeholder="Ex.: 26 ou 26, 28"
-              className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+              className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
             />
           </label>
           <button
             type="button"
             onClick={adicionarOutro}
-            className="rounded border border-amber-600 px-4 py-2 font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
+            className="rounded border border-ouro-500 px-4 py-2 font-medium text-ouro-700 hover:bg-petroleo-50 dark:text-ouro-300 dark:hover:bg-petroleo-950"
           >
             Adicionar tamanho
           </button>

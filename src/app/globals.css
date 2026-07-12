@@ -1,8 +1,18 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --background: #f5f6f2;
+  --foreground: #173332;
+  --surface: #ffffff;
+  --surface-soft: #edf3f0;
+  --border: #d7e2dd;
+  --muted: #687977;
+  --brand: #0d5c59;
+  --brand-deep: #083f3d;
+  --accent: #b77942;
+  --accent-soft: #ead7c2;
 }
 
 @theme inline {
@@ -10,17 +20,106 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-petroleo-50: #eef8f6;
+  --color-petroleo-100: #d5eeea;
+  --color-petroleo-200: #adddd7;
+  --color-petroleo-300: #7bc4bd;
+  --color-petroleo-400: #47a49e;
+  --color-petroleo-500: #288681;
+  --color-petroleo-600: #196b67;
+  --color-petroleo-700: #0d5c59;
+  --color-petroleo-800: #0a4947;
+  --color-petroleo-900: #083d3b;
+  --color-petroleo-950: #032523;
+
+  --color-ouro-50: #fbf7f2;
+  --color-ouro-100: #f5ebde;
+  --color-ouro-200: #ead7c2;
+  --color-ouro-300: #dbb88f;
+  --color-ouro-400: #ca955f;
+  --color-ouro-500: #b77942;
+  --color-ouro-600: #9d5f34;
+  --color-ouro-700: #7f482d;
+  --color-ouro-800: #6a3c2a;
+  --color-ouro-900: #593326;
+  --color-ouro-950: #321b14;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  color-scheme: dark;
+  --background: #061817;
+  --foreground: #edf5f2;
+  --surface: #0c2927;
+  --surface-soft: #123633;
+  --border: #244b47;
+  --muted: #9fb3b0;
+  --brand: #51aaa3;
+  --brand-deep: #d8f1ed;
+  --accent: #d6a673;
+  --accent-soft: #503b2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 10% -10%, rgb(40 134 129 / 0.10), transparent 30rem),
+    radial-gradient(circle at 95% 5%, rgb(183 121 66 / 0.08), transparent 26rem),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: #adddd7;
+  color: #083d3b;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition-duration: 160ms;
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: ease;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgb(40 134 129 / 0.28);
+  outline-offset: 2px;
+}
+
+.quilates-panel {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 18px 55px -38px rgb(8 63 61 / 0.45);
+}
+
+.quilates-eyebrow {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

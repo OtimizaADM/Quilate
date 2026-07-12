@@ -53,13 +53,13 @@ export function GerenciarFornecedores() {
             onChange={(e) => setNome(e.target.value)}
             required
             maxLength={120}
-            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+            className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
           />
         </label>
         <button
           type="submit"
           disabled={enviando}
-          className="rounded bg-amber-600 px-4 py-2 font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+          className="rounded bg-petroleo-700 px-4 py-2 font-medium text-white hover:bg-petroleo-800 disabled:opacity-50"
         >
           Adicionar
         </button>
