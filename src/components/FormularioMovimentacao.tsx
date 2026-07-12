@@ -130,7 +130,7 @@ export function FormularioMovimentacao() {
               <button
                 type="button"
                 onClick={() => selecionar(v)}
-                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-amber-50 dark:hover:bg-amber-950"
+                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-petroleo-50 dark:hover:bg-petroleo-950"
               >
                 <span>
                   <span className="font-mono">{v.codigo}</span>
@@ -162,7 +162,7 @@ export function FormularioMovimentacao() {
               <select
                 value={tipoMov}
                 onChange={(e) => setTipoMov(e.target.value as "entrada" | "saida")}
-                className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
               >
                 <option value="entrada">Entrada</option>
                 <option value="saida">Saída</option>
@@ -176,7 +176,7 @@ export function FormularioMovimentacao() {
                 min={1}
                 value={quantidade}
                 onChange={(e) => setQuantidade(Number(e.target.value))}
-                className="w-28 rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                className="w-28 rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
               />
             </label>
 
@@ -187,13 +187,13 @@ export function FormularioMovimentacao() {
                 value={observacao}
                 maxLength={500}
                 onChange={(e) => setObservacao(e.target.value)}
-                className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
               />
             </label>
           </div>
 
           {tipoMov === "entrada" && (
-            <div className="flex flex-wrap items-end gap-4 rounded bg-amber-50/50 p-3 dark:bg-amber-950/30">
+            <div className="flex flex-wrap items-end gap-4 rounded bg-petroleo-50/80 p-3 dark:bg-petroleo-950/50">
               <label className="flex flex-1 flex-col gap-1 text-sm">
                 <span className="font-medium">
                   Coleção <span className="text-red-600">*</span>
@@ -202,7 +202,7 @@ export function FormularioMovimentacao() {
                   value={colecaoId}
                   onChange={(e) => setColecaoId(e.target.value)}
                   required
-                  className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                  className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
                 >
                   <option value="">Selecione…</option>
                   {colecoes.map((c) => (
@@ -221,7 +221,7 @@ export function FormularioMovimentacao() {
                   value={fornecedorId}
                   onChange={(e) => setFornecedorId(e.target.value)}
                   required
-                  className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                  className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
                 >
                   <option value="">Selecione…</option>
                   {fornecedores.map((f) => (
@@ -251,7 +251,7 @@ export function FormularioMovimentacao() {
           <button
             type="submit"
             disabled={enviando}
-            className="rounded bg-amber-600 px-4 py-2 font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            className="rounded bg-petroleo-700 px-4 py-2 font-medium text-white hover:bg-petroleo-800 disabled:opacity-50"
           >
             {enviando ? "Registrando..." : "Registrar movimentação"}
           </button>

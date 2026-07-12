@@ -22,6 +22,12 @@ interface Fornecedor {
   nome: string;
 }
 
+async function buscarProdutos(url: string): Promise<Produto[]> {
+  const resposta = await fetch(url);
+  const corpo = await resposta.json();
+  return corpo.produtos ?? [];
+}
+
 export function ListaProdutos() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
@@ -38,19 +44,25 @@ export function ListaProdutos() {
     fetch("/api/fornecedores").then((r) => r.json()).then((f) => setFornecedores(f.fornecedores ?? []));
   }, []);
 
+  const params = new URLSearchParams({ status });
+  if (tipo) params.set("tipo", tipo);
+  if (colecaoId) params.set("colecaoId", colecaoId);
+  if (fornecedorId) params.set("fornecedorId", fornecedorId);
+  const urlProdutos = `/api/produtos?${params}`;
+
   const carregar = useCallback(async () => {
-    const params = new URLSearchParams({ status });
-    if (tipo) params.set("tipo", tipo);
-    if (colecaoId) params.set("colecaoId", colecaoId);
-    if (fornecedorId) params.set("fornecedorId", fornecedorId);
-    const resposta = await fetch(`/api/produtos?${params}`);
-    const corpo = await resposta.json();
-    setProdutos(corpo.produtos ?? []);
-  }, [status, tipo, colecaoId, fornecedorId]);
+    setProdutos(await buscarProdutos(urlProdutos));
+  }, [urlProdutos]);
 
   useEffect(() => {
-    carregar();
-  }, [carregar]);
+    let ativo = true;
+    buscarProdutos(urlProdutos).then((resultado) => {
+      if (ativo) setProdutos(resultado);
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [urlProdutos]);
 
   async function alterarAtivo(p: Produto, ativo: boolean) {
     setErro(null);
@@ -88,7 +100,7 @@ export function ListaProdutos() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Código ou descrição"
-            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+            className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
           />
         </label>
         <Select rotulo="Tipo" valor={tipo} aoMudar={setTipo} opcaoTodos="Todos">
@@ -183,7 +195,7 @@ export function ListaProdutos() {
                         <button
                           type="button"
                           onClick={() => alterarAtivo(p, false)}
-                          className="text-amber-700 hover:underline dark:text-amber-400"
+                          className="text-ouro-700 hover:underline dark:text-ouro-300"
                         >
                           Inativar
                         </button>
@@ -236,7 +248,7 @@ function Select({
       <select
         value={valor}
         onChange={(e) => aoMudar(e.target.value)}
-        className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+        className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
       >
         {opcaoTodos !== undefined && <option value="">{opcaoTodos}</option>}
         {children}

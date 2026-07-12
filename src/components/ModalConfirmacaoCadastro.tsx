@@ -113,7 +113,7 @@ export function ModalConfirmacaoCadastro({ resumo, enviando, aoConfirmar, aoCanc
             type="button"
             onClick={aoConfirmar}
             disabled={enviando}
-            className="rounded bg-amber-600 px-4 py-2 font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            className="rounded bg-petroleo-700 px-4 py-2 font-medium text-white hover:bg-petroleo-800 disabled:opacity-50"
           >
             {enviando ? "Gravando..." : "Confirmar e gravar"}
           </button>

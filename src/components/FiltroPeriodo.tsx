@@ -23,7 +23,7 @@ export function FiltroPeriodo({ de, ate }: { de: string; ate: string }) {
           type="date"
           value={novoDe}
           onChange={(e) => setNovoDe(e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -32,7 +32,7 @@ export function FiltroPeriodo({ de, ate }: { de: string; ate: string }) {
           type="date"
           value={novoAte}
           onChange={(e) => setNovoAte(e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
         />
       </label>
       <button

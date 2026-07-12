@@ -24,7 +24,7 @@ export function CatalogoInterativo({ modelos }: { modelos: readonly ModeloCatalo
 
   return (
     <>
-      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:gap-5">
         {modelos.map((modelo) => {
           const categoria = buscarTipo(modelo.tipo)?.descricao ?? `Tipo ${modelo.tipo}`;
           const titulo = modelo.descricao ?? `${categoria} ${modelo.codigoBase}`;
@@ -33,24 +33,30 @@ export function CatalogoInterativo({ modelos }: { modelos: readonly ModeloCatalo
           return (
             <li
               key={modelo.id}
-              className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
+              className="group/card overflow-hidden rounded-2xl border border-[#d7e2dd] bg-white shadow-[0_18px_45px_-35px_rgba(8,63,61,0.55)] hover:-translate-y-1 hover:border-petroleo-300 hover:shadow-xl dark:border-petroleo-800 dark:bg-petroleo-900"
             >
               <button
                 type="button"
                 onClick={() => setSelecionado(modelo)}
                 aria-label={`Ampliar e ver detalhes de ${titulo}`}
-                className="group block w-full cursor-zoom-in text-left"
+                className="group block w-full cursor-zoom-in overflow-hidden bg-[#eef3f1] text-left dark:bg-petroleo-950"
               >
                 <ImagemModelo modelo={modelo} className="transition-transform group-hover:scale-[1.02]" />
               </button>
-              <div className="space-y-2 p-3 text-sm">
-                <p className="line-clamp-2 min-h-10 font-medium">{titulo}</p>
-                <p className="font-semibold">Venda: {formatarReais(modelo.precoVenda)}</p>
-                <p className="font-mono text-xs text-gray-500">
+              <div className="space-y-2.5 p-4 text-sm">
+                <p className="line-clamp-2 min-h-10 font-semibold leading-snug text-petroleo-950 dark:text-white">
+                  {titulo}
+                </p>
+                <p className="font-bold text-petroleo-800 dark:text-petroleo-100">
+                  Venda: {formatarReais(modelo.precoVenda)}
+                </p>
+                <p className="font-mono text-[11px] leading-relaxed text-[#71817f] dark:text-petroleo-300">
                   SKU: {primeiroSku}
                   {outrosSkus > 0 ? ` + ${outrosSkus} variações` : ""}
                 </p>
-                <p className="text-gray-500">Estoque: {modelo.saldoTotal}</p>
+                <p className="inline-flex rounded-full bg-petroleo-50 px-2.5 py-1 text-xs font-semibold text-petroleo-700 dark:bg-petroleo-800 dark:text-petroleo-100">
+                  Estoque: {modelo.saldoTotal}
+                </p>
               </div>
             </li>
           );
@@ -76,7 +82,7 @@ function ImagemModelo({ modelo, className = "" }: { modelo: ModeloCatalogo; clas
     />
   ) : (
     <div
-      className={`flex aspect-square w-full items-center justify-center bg-gray-100 text-xs text-gray-400 dark:bg-gray-800 ${className}`}
+      className={`flex aspect-square w-full items-center justify-center bg-[#e9efed] text-xs text-[#879693] dark:bg-petroleo-950 dark:text-petroleo-300 ${className}`}
     >
       sem imagem
     </div>
@@ -89,7 +95,7 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-petroleo-950/80 p-4 backdrop-blur-sm"
       onMouseDown={(evento) => {
         if (evento.target === evento.currentTarget) aoFechar();
       }}
@@ -98,12 +104,12 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-detalhe-catalogo"
-        className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white shadow-2xl dark:bg-gray-900"
+        className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-[#fbfcfa] shadow-2xl dark:bg-petroleo-900"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700">
+        <div className="flex items-start justify-between gap-4 border-b border-[#d7e2dd] p-5 dark:border-petroleo-700 sm:px-6">
           <div>
-            <p className="font-mono text-xs text-gray-500">{modelo.codigoBase}</p>
-            <h2 id="titulo-detalhe-catalogo" className="text-xl font-semibold">
+            <p className="font-mono text-xs text-ouro-600 dark:text-ouro-300">{modelo.codigoBase}</p>
+            <h2 id="titulo-detalhe-catalogo" className="mt-1 text-xl font-semibold text-petroleo-950 dark:text-white">
               {titulo}
             </h2>
           </div>
@@ -111,7 +117,7 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
             type="button"
             onClick={aoFechar}
             aria-label="Fechar detalhes"
-            className="rounded px-3 py-1 text-2xl leading-none text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="rounded-full px-3 py-1 text-2xl leading-none text-[#6d7d7a] hover:bg-petroleo-50 hover:text-petroleo-900 dark:hover:bg-petroleo-800 dark:hover:text-white"
           >
             ×
           </button>
@@ -131,17 +137,17 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
             </dl>
 
             <div>
-              <h3 className="font-semibold">Descrição</h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="font-semibold text-petroleo-950 dark:text-white">Descrição</h3>
+              <p className="mt-1 text-sm leading-relaxed text-[#687977] dark:text-petroleo-200">
                 {modelo.descricao ?? "Descrição ainda não informada."}
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Estoque por variação</h3>
-              <div className="mt-2 overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-petroleo-950 dark:text-white">Estoque por variação</h3>
+              <div className="mt-2 overflow-x-auto rounded-2xl border border-[#d7e2dd] dark:border-petroleo-700">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-left dark:bg-gray-800">
+                  <thead className="bg-petroleo-50 text-left text-petroleo-900 dark:bg-petroleo-800 dark:text-petroleo-50">
                     <tr>
                       <th className="px-3 py-2 font-medium">SKU</th>
                       <th className="px-3 py-2 font-medium">Pedra</th>
@@ -149,7 +155,7 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
                       <th className="px-3 py-2 text-right font-medium">Estoque</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-[#e3ebe7] dark:divide-petroleo-800">
                     {modelo.variacoes.map((variacao) => (
                       <tr key={variacao.codigo}>
                         <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
@@ -193,7 +199,7 @@ function ImagemAmpliada({ modelo }: { modelo: ModeloCatalogo }) {
 
   return (
     <div
-      className="group relative cursor-zoom-in overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
+      className="group relative cursor-zoom-in overflow-hidden rounded-2xl bg-[#e9efed] dark:bg-petroleo-950"
       onMouseEnter={() => setZoom((anterior) => ({ ...anterior, ativo: true }))}
       onMouseMove={moverZoom}
       onMouseLeave={() => setZoom({ ativo: false, x: 50, y: 50 })}
@@ -228,9 +234,9 @@ function Dado({
   destaque?: boolean;
 }) {
   return (
-    <div className="rounded border border-gray-200 p-3 dark:border-gray-700">
-      <dt className="text-xs text-gray-500">{rotulo}</dt>
-      <dd className={destaque ? "text-lg font-bold text-orange-600" : "font-semibold"}>{valor}</dd>
+    <div className="rounded-2xl border border-[#d7e2dd] bg-white p-3 dark:border-petroleo-700 dark:bg-petroleo-950">
+      <dt className="text-xs text-[#71817f] dark:text-petroleo-300">{rotulo}</dt>
+      <dd className={destaque ? "text-lg font-bold text-ouro-600 dark:text-ouro-300" : "font-semibold text-petroleo-950 dark:text-white"}>{valor}</dd>
     </div>
   );
 }

@@ -28,10 +28,20 @@ export default async function PaginaCatalogo({
   });
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Catálogo</h1>
-        <p className="text-sm text-gray-500">{itens.length} modelo(s)</p>
+    <section className="space-y-7">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="quilates-eyebrow">Vitrine do estoque</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-petroleo-950 dark:text-white sm:text-4xl">
+            Catálogo de joias
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#687977] dark:text-petroleo-200">
+            Explore modelos, amplie as fotos e consulte todas as variações disponíveis.
+          </p>
+        </div>
+        <span className="rounded-full bg-petroleo-100 px-4 py-2 text-sm font-semibold text-petroleo-800 dark:bg-petroleo-900 dark:text-petroleo-100">
+          {itens.length} modelo(s)
+        </span>
       </div>
 
       <FiltroCatalogo

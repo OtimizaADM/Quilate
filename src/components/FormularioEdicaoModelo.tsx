@@ -316,7 +316,7 @@ export function FormularioEdicaoModelo({
 
         <button
           type="submit"
-          className="rounded bg-amber-600 px-4 py-2 font-medium text-white hover:bg-amber-700"
+          className="rounded bg-petroleo-700 px-4 py-2 font-medium text-white hover:bg-petroleo-800"
         >
           Revisar e salvar
         </button>

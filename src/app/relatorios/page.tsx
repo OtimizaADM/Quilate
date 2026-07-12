@@ -16,7 +16,7 @@ export default function PaginaRelatorios() {
           <a
             key={r.href}
             href={r.href}
-            className="rounded-lg border border-gray-200 p-5 hover:border-amber-500 dark:border-gray-800"
+            className="rounded-lg border border-gray-200 p-5 hover:border-petroleo-400 dark:border-gray-800"
           >
             <h2 className="font-medium">{r.titulo} →</h2>
             <p className="text-sm text-gray-500">{r.desc}</p>

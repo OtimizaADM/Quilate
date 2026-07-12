@@ -89,7 +89,7 @@ export function FormularioImportacaoLegado() {
               setErro(null);
               setDetalhes([]);
             }}
-            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+            className="rounded-xl border border-[#cbd9d4] bg-white px-3 py-2.5 text-petroleo-950 focus:border-petroleo-500 dark:border-petroleo-700 dark:bg-petroleo-950 dark:text-white"
           />
         </label>
         <button
@@ -121,7 +121,7 @@ export function FormularioImportacaoLegado() {
           </div>
 
           {analise.correcoes.length > 0 && (
-            <div className="rounded border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+            <div className="rounded border border-ouro-300 bg-ouro-50 p-3 text-ouro-900 dark:bg-ouro-950 dark:text-ouro-100">
               <p className="font-medium">Correções conhecidas aplicadas</p>
               <ul className="mt-1 list-disc space-y-1 pl-5">
                 {analise.correcoes.map((correcao) => (
@@ -156,7 +156,7 @@ export function FormularioImportacaoLegado() {
               type="button"
               disabled={!podeImportar || processando}
               onClick={() => enviar("importar")}
-              className="rounded bg-orange-600 px-5 py-2 font-medium text-white hover:bg-orange-700 disabled:opacity-50"
+              className="rounded bg-petroleo-700 px-5 py-2 font-medium text-white hover:bg-petroleo-800 disabled:opacity-50"
             >
               Confirmar importação com saldo zero
             </button>
