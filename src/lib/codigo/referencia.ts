@@ -16,7 +16,7 @@ export interface Tipo {
 }
 
 export interface Pedra {
-  codigo: string; // '00'..'15'
+  codigo: string; // '00'..'17'
   descricao: string;
 }
 
@@ -46,6 +46,8 @@ export const PEDRAS: readonly Pedra[] = [
   { codigo: "13", descricao: "Outros" },
   { codigo: "14", descricao: "Pérola" },
   { codigo: "15", descricao: "Cristal+Pérola" },
+  { codigo: "16", descricao: "Resina" },
+  { codigo: "17", descricao: "Conhaque" },
 ] as const;
 
 /** Tamanhos válidos (cm) por tipo. Tipos sem tamanho não aparecem aqui. */

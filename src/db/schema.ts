@@ -32,7 +32,7 @@ export const tipos = pgTable("tipos", {
 });
 
 export const pedras = pgTable("pedras", {
-  codigo: char("codigo", { length: 2 }).primaryKey(), // '00'..'15'
+  codigo: char("codigo", { length: 2 }).primaryKey(), // '00'..'17'
   descricao: text("descricao").notNull(),
 });
 
