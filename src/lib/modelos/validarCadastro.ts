@@ -86,3 +86,24 @@ export const esquemaCadastroModelo = z
   });
 
 export type CadastroModeloValidado = z.infer<typeof esquemaCadastroModelo>;
+
+const novoSku = z.object({
+  pedra: z.string().refine((p) => CODIGOS_PEDRA.includes(p), { message: "Pedra inválida." }),
+  tamanho: z.union([z.string().regex(DOIS_DIGITOS), z.null()]),
+  quantidade: z.number().int().min(0),
+});
+
+export const esquemaEdicaoModelo = z.object({
+  descricao: z.preprocess(paraTexto, z.string().trim().min(1, "Descrição é obrigatória.").max(500)),
+  modeloFornecedor: z
+    .preprocess(paraTexto, z.string().trim().max(200))
+    .transform((v) => (v === "" ? null : v)),
+  precoCusto: precoObrigatorio("Preço de custo"),
+  precoVenda: precoObrigatorio("Preço de venda"),
+  colecaoId: z.preprocess(paraTexto, z.string().uuid("Coleção é obrigatória.")),
+  fornecedorId: z.preprocess(paraTexto, z.string().uuid("Fornecedor é obrigatório.")),
+  novosSkus: z.array(novoSku).default([]),
+  removerVariacaoIds: z.array(z.string().uuid()).default([]),
+});
+
+export type EdicaoModeloValidada = z.infer<typeof esquemaEdicaoModelo>;

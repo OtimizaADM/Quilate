@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esquemaCadastroModelo } from "./validarCadastro";
+import { esquemaCadastroModelo, esquemaEdicaoModelo } from "./validarCadastro";
 
 const ID = "11111111-1111-4111-8111-111111111111";
 
@@ -85,5 +85,37 @@ describe("esquemaCadastroModelo", () => {
 
   it("default de quantidades é lista vazia", () => {
     expect(esquemaCadastroModelo.parse({ ...base }).quantidades).toEqual([]);
+  });
+});
+
+describe("esquemaEdicaoModelo", () => {
+  const baseEd = {
+    descricao: "Anel X",
+    precoCusto: "10,00",
+    precoVenda: "20,00",
+    colecaoId: ID,
+    fornecedorId: ID,
+    novosSkus: [],
+    removerVariacaoIds: [],
+  };
+
+  it("aceita edição sem novos SKUs nem remoções", () => {
+    expect(esquemaEdicaoModelo.safeParse(baseEd).success).toBe(true);
+  });
+
+  it("aceita novos SKUs com tamanho custom e quantidade", () => {
+    const r = esquemaEdicaoModelo.safeParse({
+      ...baseEd,
+      novosSkus: [{ pedra: "06", tamanho: "17", quantidade: 2 }],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejeita pedra inválida em novo SKU", () => {
+    const r = esquemaEdicaoModelo.safeParse({
+      ...baseEd,
+      novosSkus: [{ pedra: "99", tamanho: "18", quantidade: 1 }],
+    });
+    expect(r.success).toBe(false);
   });
 });
