@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { TIPOS } from "@/lib/codigo/referencia";
 import { formatarReais } from "@/lib/format";
 import { consolidarPorCategoria } from "@/lib/produtos/consolidarPorCategoria";
@@ -172,6 +173,12 @@ export function ListaProdutos() {
                   <td className="px-3 py-2">{p.ativo ? "Ativo" : "Inativo"}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
+                      <Link
+                        href={`/produtos/${p.id}/editar`}
+                        className="text-blue-700 hover:underline dark:text-blue-400"
+                      >
+                        Editar
+                      </Link>
                       {p.ativo ? (
                         <button
                           type="button"
