@@ -50,4 +50,40 @@ describe("esquemaCadastroModelo", () => {
     expect(esquemaCadastroModelo.safeParse({ ...base, fornecedorId: null }).success).toBe(false);
     expect(esquemaCadastroModelo.safeParse({ ...base, colecaoId: "nao-uuid" }).success).toBe(false);
   });
+
+  it("aceita modelo do fornecedor e o normaliza para null quando vazio", () => {
+    expect(esquemaCadastroModelo.parse({ ...base }).modeloFornecedor).toBeNull();
+    expect(
+      esquemaCadastroModelo.parse({ ...base, modeloFornecedor: "  REF-123 " }).modeloFornecedor,
+    ).toBe("REF-123");
+  });
+
+  it("aceita tamanho fora da lista de sugestões (2 dígitos)", () => {
+    expect(esquemaCadastroModelo.safeParse({ ...base, tamanhos: ["17"] }).success).toBe(true);
+    expect(esquemaCadastroModelo.safeParse({ ...base, tamanhos: ["7"] }).success).toBe(false);
+  });
+
+  it("aceita quantidades para SKUs selecionados", () => {
+    const r = esquemaCadastroModelo.safeParse({
+      ...base,
+      pedras: ["06"],
+      tamanhos: ["18"],
+      quantidades: [{ pedra: "06", tamanho: "18", quantidade: 3 }],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejeita quantidade > 0 para SKU não selecionado", () => {
+    const r = esquemaCadastroModelo.safeParse({
+      ...base,
+      pedras: ["06"],
+      tamanhos: ["18"],
+      quantidades: [{ pedra: "01", tamanho: "18", quantidade: 3 }],
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it("default de quantidades é lista vazia", () => {
+    expect(esquemaCadastroModelo.parse({ ...base }).quantidades).toEqual([]);
+  });
 });
