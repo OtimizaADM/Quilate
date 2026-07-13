@@ -74,7 +74,7 @@ export function GerenciarFornecedores() {
       {fornecedores.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum fornecedor cadastrado ainda.</p>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+        <ul className="quilates-list divide-y divide-gray-100 overflow-hidden rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
           {fornecedores.map((f) => (
             <li key={f.id} className="px-4 py-2 text-sm">
               {f.nome}

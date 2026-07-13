@@ -77,7 +77,7 @@ export function ModalConfirmacaoCadastro({ resumo, enviando, aoConfirmar, aoCanc
           />
         )}
 
-        <table className="mt-4 w-full text-sm">
+        <table className="quilates-table mt-4 w-full text-sm">
           <thead className="text-left text-gray-500">
             <tr>
               <th className="py-1 font-medium">SKU</th>

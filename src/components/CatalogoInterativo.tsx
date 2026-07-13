@@ -146,7 +146,7 @@ function ModalDetalhes({ modelo, aoFechar }: { modelo: ModeloCatalogo; aoFechar:
             <div>
               <h3 className="font-semibold text-petroleo-950 dark:text-white">Estoque por variação</h3>
               <div className="mt-2 overflow-x-auto rounded-2xl border border-[#d7e2dd] dark:border-petroleo-700">
-                <table className="w-full text-sm">
+                <table className="quilates-table w-full text-sm">
                   <thead className="bg-petroleo-50 text-left text-petroleo-900 dark:bg-petroleo-800 dark:text-petroleo-50">
                     <tr>
                       <th className="px-3 py-2 font-medium">SKU</th>

@@ -22,8 +22,8 @@ export default async function PaginaCadastro() {
   ]);
 
   return (
-    <section className="space-y-6">
-      <div>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
         <h1 className="text-2xl font-semibold">Cadastro de modelo</h1>
         <p className="text-sm text-gray-500">
           O sistema gera o sequencial e cria as variações (SKUs) automaticamente.
@@ -31,19 +31,21 @@ export default async function PaginaCadastro() {
       </div>
       <FormularioCodigoExistente />
       <FormularioImportacaoLegado />
-      <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">Cadastrar novo modelo sequencial</h2>
-        <p className="text-sm text-gray-500">
-          Para produtos novos, mantenha o cadastro completo abaixo.
-        </p>
+      <div className="quilates-section-card space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold">Cadastrar novo modelo sequencial</h2>
+          <p className="text-sm text-gray-500">
+            Para produtos novos, mantenha o cadastro completo abaixo.
+          </p>
+        </div>
+        <FormularioCadastroModelo
+          tipos={TIPOS}
+          pedras={PEDRAS}
+          tamanhosPorTipo={TAMANHOS_VALIDOS}
+          colecoes={colecoes}
+          fornecedores={fornecedores}
+        />
       </div>
-      <FormularioCadastroModelo
-        tipos={TIPOS}
-        pedras={PEDRAS}
-        tamanhosPorTipo={TAMANHOS_VALIDOS}
-        colecoes={colecoes}
-        fornecedores={fornecedores}
-      />
     </section>
   );
 }

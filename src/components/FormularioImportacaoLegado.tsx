@@ -70,7 +70,7 @@ export function FormularioImportacaoLegado() {
     analise.skusNovos > 0;
 
   return (
-    <div className="rounded-lg border border-gray-200 p-5 dark:border-gray-700">
+    <div className="quilates-section-card">
       <h2 className="text-lg font-semibold">Importar tabela legada</h2>
       <p className="mt-1 text-sm text-gray-500">
         Converte tamanho/pedra para o formato atual e cadastra somente itens ausentes, todos com

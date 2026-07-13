@@ -34,7 +34,7 @@ export function FormularioCodigoExistente() {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 p-5 dark:border-gray-700">
+    <div className="quilates-section-card">
       <h2 className="text-lg font-semibold">Cadastrar código existente</h2>
       <p className="mt-1 text-sm text-gray-500">
         Use para um SKU antigo que ainda não existe no sistema. O saldo continua sendo

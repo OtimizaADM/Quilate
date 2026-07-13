@@ -32,8 +32,11 @@ export default async function PaginaMovimentacoes({
   const relatorio = await movimentacoesPorPeriodo(db, de, ate);
 
   return (
-    <section className="space-y-6">
-      <h1 className="text-2xl font-semibold">Movimentações por período</h1>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
+        <h1 className="text-2xl font-semibold">Movimentações por período</h1>
+        <p className="text-sm text-gray-500">Acompanhe entradas e saídas dentro do intervalo selecionado.</p>
+      </div>
 
       <FiltroPeriodo de={de} ate={ate} />
 
@@ -45,8 +48,8 @@ export default async function PaginaMovimentacoes({
       {relatorio.itens.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhuma movimentação no período.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-sm">
+        <div className="quilates-table-page overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+          <table className="quilates-table w-full text-sm">
             <thead className="bg-gray-50 text-left dark:bg-gray-900">
               <tr>
                 <th className="px-3 py-2 font-medium">Data</th>

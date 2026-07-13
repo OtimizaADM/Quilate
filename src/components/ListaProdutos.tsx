@@ -157,8 +157,8 @@ export function ListaProdutos() {
       {visiveis.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum produto encontrado.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-sm">
+        <div className="quilates-table-page overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+          <table className="quilates-table w-full text-sm">
             <thead className="bg-gray-50 text-left dark:bg-gray-900">
               <tr>
                 <th className="px-3 py-2 font-medium">Código</th>

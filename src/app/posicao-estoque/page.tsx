@@ -10,8 +10,8 @@ export default async function PaginaPosicaoEstoque() {
   const posicao = await posicaoEstoque(db);
 
   return (
-    <section className="space-y-6">
-      <div>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
         <h1 className="text-2xl font-semibold">Posição de estoque</h1>
         <p className="text-sm text-gray-500">
           {posicao.itens.length} SKU(s) · quantidade total {posicao.totalQuantidade}
@@ -21,8 +21,8 @@ export default async function PaginaPosicaoEstoque() {
       {posicao.itens.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum produto cadastrado ainda.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-sm">
+        <div className="quilates-table-page overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+          <table className="quilates-table w-full text-sm">
             <thead className="bg-gray-50 text-left dark:bg-gray-900">
               <tr>
                 <th className="px-3 py-2 font-medium">Código</th>
