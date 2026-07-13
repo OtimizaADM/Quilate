@@ -13,14 +13,17 @@ export default async function PaginaSaldoPorCategoria() {
   const totalVenda = linhas.reduce((s, l) => s + l.valorVenda, 0);
 
   return (
-    <section className="space-y-6">
-      <h1 className="text-2xl font-semibold">Saldo por categoria</h1>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
+        <h1 className="text-2xl font-semibold">Saldo por categoria</h1>
+        <p className="text-sm text-gray-500">Compare quantidade e valor consolidado por tipo de produto.</p>
+      </div>
 
       {linhas.length === 0 ? (
         <p className="text-sm text-gray-500">Sem dados.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-sm">
+        <div className="quilates-table-page overflow-x-auto rounded border border-gray-200 dark:border-gray-800">
+          <table className="quilates-table w-full text-sm">
             <thead className="bg-gray-50 text-left dark:bg-gray-900">
               <tr>
                 <th className="px-3 py-2 font-medium">Categoria</th>

@@ -10,8 +10,8 @@ export default async function PaginaItensZerados() {
   const itens = await itensZerados(db);
 
   return (
-    <section className="space-y-6">
-      <div>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
         <h1 className="text-2xl font-semibold">Itens com saldo zerado</h1>
         <p className="text-sm text-gray-500">{itens.length} SKU(s) com estoque em zero.</p>
       </div>
@@ -19,7 +19,7 @@ export default async function PaginaItensZerados() {
       {itens.length === 0 ? (
         <p className="text-sm text-gray-500">Nenhum item zerado.</p>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+        <ul className="quilates-list divide-y divide-gray-100 overflow-hidden rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
           {itens.map((i) => (
             <li key={i.codigo} className="px-4 py-2 text-sm">
               <span className="font-mono">{i.codigo}</span>

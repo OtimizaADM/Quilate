@@ -28,8 +28,8 @@ export default async function PaginaEdicao({
 
   const tipo = buscarTipo(modelo.tipo);
   return (
-    <section className="space-y-6">
-      <div>
+    <section className="quilates-workspace space-y-6">
+      <div className="quilates-page-heading">
         <h1 className="text-2xl font-semibold">
           Editar {tipo?.descricao ?? "modelo"} {modelo.codigoBase}
         </h1>
@@ -37,13 +37,15 @@ export default async function PaginaEdicao({
           Tipo e código são fixos. Saldo de SKUs existentes muda só pela Movimentação.
         </p>
       </div>
-      <FormularioEdicaoModelo
-        modelo={modelo}
-        pedras={PEDRAS}
-        tamanhosPorTipo={TAMANHOS_VALIDOS}
-        colecoes={colecoes}
-        fornecedores={fornecedores}
-      />
+      <div className="quilates-section-card">
+        <FormularioEdicaoModelo
+          modelo={modelo}
+          pedras={PEDRAS}
+          tamanhosPorTipo={TAMANHOS_VALIDOS}
+          colecoes={colecoes}
+          fornecedores={fornecedores}
+        />
+      </div>
     </section>
   );
 }

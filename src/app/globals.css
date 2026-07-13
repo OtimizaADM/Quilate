@@ -115,6 +115,75 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.quilates-table {
+  border-collapse: collapse;
+}
+
+.quilates-table tbody > tr {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.quilates-table tbody > tr:nth-child(odd) {
+  background-color: var(--surface);
+}
+
+.quilates-table tbody > tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--surface) 90%, var(--brand) 10%);
+}
+
+.quilates-table tbody > tr:hover {
+  background-color: color-mix(in srgb, var(--surface) 76%, var(--brand) 24%);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+.quilates-table-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.quilates-workspace {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.quilates-page-heading {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.quilates-page-heading::before {
+  position: absolute;
+  inset-block: 0.15rem;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+  content: "";
+}
+
+.quilates-section-card {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  box-shadow: 0 18px 55px -42px rgb(8 63 61 / 0.5);
+}
+
+.quilates-list > li {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.quilates-list > li:nth-child(even) {
+  background-color: color-mix(in srgb, var(--surface) 90%, var(--brand) 10%);
+}
+
+.quilates-list > li:hover {
+  background-color: color-mix(in srgb, var(--surface) 76%, var(--brand) 24%);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

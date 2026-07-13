@@ -124,7 +124,7 @@ export function FormularioMovimentacao() {
       </form>
 
       {resultados.length > 0 && (
-        <ul className="divide-y divide-gray-200 rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+        <ul className="quilates-list divide-y divide-gray-200 overflow-hidden rounded border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
           {resultados.map((v) => (
             <li key={v.codigo}>
               <button
